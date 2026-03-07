@@ -1,0 +1,9 @@
+.DS_Store
+node_modules/
+*.log
+.rpi.yaml
+rpi/
+.claude/
+*.swp
+*.swo
+Thumbs.db
