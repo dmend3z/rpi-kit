@@ -1,0 +1,115 @@
+---
+name: rpi:status
+description: Show all RPI features and their current phase, progress, and status.
+argument-hint: "[feature-slug]"
+allowed-tools:
+  - Read
+  - Glob
+  - Bash
+---
+
+<objective>
+Display detailed status cards for all features (or a specific feature) in the RPI workflow.
+</objective>
+
+<process>
+
+## 1. Load config
+
+Read `.rpi.yaml` for folder path. Default to `rpi/` if not found.
+
+## 2. Discover features
+
+Use Glob to find all `REQUEST.md` files:
+```
+{folder}/*/REQUEST.md
+```
+
+Each parent directory is a feature slug.
+
+If `$ARGUMENTS` specifies a feature slug, filter to that feature only.
+
+If no features found:
+```
+No RPI features found in {folder}/.
+Run /rpi:new to start your first feature.
+```
+
+## 3. Determine phase for each feature
+
+For each feature slug, check which files exist:
+
+- `REQUEST.md` exists, no `research/RESEARCH.md` → Phase: **new**
+- `research/RESEARCH.md` exists, no `plan/PLAN.md` → Phase: **researched**
+- `plan/PLAN.md` exists, no `implement/IMPLEMENT.md` → Phase: **planned**
+- `implement/IMPLEMENT.md` exists → Phase: **implementing** or **complete**
+
+## 4. Gather details per feature
+
+For each feature, read the relevant files to extract:
+
+**If researched or later:**
+- Read RESEARCH.md executive summary for verdict and complexity
+
+**If planned or later:**
+- Read PLAN.md to count total tasks and phases
+
+**If implementing:**
+- Read IMPLEMENT.md to count completed tasks `[x]` vs total `[ ]`
+- Identify current task (first unchecked)
+- Check for review verdict
+
+**If complete:**
+- Read IMPLEMENT.md for final review verdict and completion timestamp
+
+## 5. Display detailed cards
+
+Output a card per feature:
+
+```markdown
+## {feature-slug}
+Phase: {phase} ({progress details})
+Verdict: {GO|GO with concerns|NO-GO|—}
+{Complexity: S|M|L|XL (if known)}
+{Current: Task {id} — {name} (if implementing)}
+{Review: PASS|FAIL (if reviewed)}
+```
+
+### Example output:
+
+```markdown
+# RPI Status
+
+## oauth2-auth
+Phase: implement (6/9 tasks)
+Verdict: GO
+Complexity: M
+Current: Task 2.1 — Login component
+
+## payment-system
+Phase: research
+Verdict: pending
+Complexity: —
+
+## dark-mode
+Phase: plan (ready to implement)
+Verdict: GO
+Complexity: S
+
+## csv-export
+Phase: new
+Verdict: —
+```
+
+## 6. Suggest next action
+
+For each feature, suggest the logical next command:
+- **new** → `/rpi:research {slug}`
+- **researched (GO)** → `/rpi:plan {slug}`
+- **researched (NO-GO)** → Review alternatives or `/rpi:plan {slug} --force`
+- **planned** → `/rpi:implement {slug}`
+- **implementing** → `/rpi:implement {slug} --resume`
+- **complete (PASS)** → Done
+- **complete (FAIL)** → `/rpi:review {slug}`
+
+</process>
