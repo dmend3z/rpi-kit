@@ -34,7 +34,7 @@ Use AskUserQuestion to gather preferences. Ask up to 4 questions at a time:
 
 **Batch 3:**
 - "Task count threshold for parallel execution?" — Options: 8 (Recommended), 5, 12, always sequential
-- "Create a git branch per feature?" — Options: No (Recommended), Yes
+- "How do you want to isolate features?" — Options: `none` (Recommended — work on current branch), `branch` (create a git branch per feature), `worktree` (create a git worktree + branch in `.worktrees/`)
 
 **Batch 4 (TDD):**
 - "Enable Test-Driven Development during implementation?" — Options: No (default), Yes
@@ -55,7 +55,7 @@ commit_style: {conventional|descriptive}
 parallel_threshold: {number}
 skip_artifacts: []
 review_after_implement: true
-branch_per_feature: {true|false}
+isolation: {none|branch|worktree}
 tdd: {true|false}
 test_runner: {auto|command}
 ```

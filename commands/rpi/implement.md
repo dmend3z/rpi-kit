@@ -92,8 +92,82 @@ Otherwise, use smart default:
 
 For each task in order (respecting dependencies):
 
-1. Read PLAN.md task details (files, deps)
+1. Read PLAN.md task details (files, deps, test spec if present)
 2. Read eng.md for technical context
+
+#### If TDD is enabled (`tdd: true` in config):
+
+Follow strict RED → GREEN → REFACTOR per task:
+
+**RED — Write failing test:**
+3a. Launch test-engineer agent:
+   ```
+   You are the test-engineer agent for the RPI workflow.
+
+   Read these files for context:
+   - {folder}/{feature-slug}/plan/PLAN.md
+   - {folder}/{feature-slug}/plan/eng.md
+
+   Current task:
+   **{task_id}** {task_description}
+   Files: {files}
+   Test: {test_spec from PLAN.md, if present}
+
+   Write ONE failing test for this task.
+   - Exercise real code through public interfaces
+   - Clear, behavior-describing test name
+   - Minimal assertions — one logical check
+   - Follow project test conventions
+   - Do NOT write implementation code
+   ```
+
+**VERIFY RED — Confirm correct failure:**
+3b. Run the test:
+   ```bash
+   {test_runner} {test_file}
+   ```
+   - Test fails for expected reason → proceed
+   - Test errors (syntax/import) → fix test, re-run
+   - Test passes → behavior exists already, skip or ask user
+
+**GREEN — Minimal implementation:**
+3c. Launch plan-executor agent:
+   ```
+   You are implementing a single task using TDD.
+
+   The following test is currently FAILING:
+   {test_file}:{test_name}
+   Failure: {failure_reason}
+
+   Write the MINIMAL code to make this test pass.
+   - Only touch files listed for this task
+   - Do NOT add features beyond what the test requires
+   - Match existing code style
+   - If blocked, report the blocker — don't improvise
+   ```
+
+**VERIFY GREEN — Confirm pass:**
+3d. Run the test again:
+   ```bash
+   {test_runner} {test_file}
+   ```
+   Run full suite to check regressions:
+   ```bash
+   {test_runner}
+   ```
+   - All pass → proceed to REFACTOR
+   - Target fails → fix implementation (not the test), re-run
+   - Other tests break → fix regressions first
+
+**REFACTOR — Clean up:**
+3e. Review implementation: remove duplication, improve names, extract helpers if 3+ uses.
+   Re-run tests to confirm still green.
+
+**Additional test cycles:**
+3f. If the task has multiple test scenarios (from test spec or eng.md edge cases), repeat RED → GREEN → REFACTOR for each additional test before moving to next task.
+
+#### If TDD is disabled (default):
+
 3. Launch plan-executor agent:
    ```
    You are implementing a single task from the RPI plan.
@@ -113,10 +187,14 @@ For each task in order (respecting dependencies):
    - If blocked, report the blocker — don't improvise
    - When done, report: files changed, any deviations
    ```
-4. After agent completes, update IMPLEMENT.md:
+
+#### After task completion (both modes):
+
+4. Update IMPLEMENT.md:
    - Mark task as `[x]` with timestamp
    - Record files changed
    - Record any deviations
+   - If TDD: record tests written and pass/fail status
 5. If config `commit_style` is `conventional`:
    - Stage changed files
    - Commit: `{type}({task_id}): {task_description}`
@@ -192,6 +270,47 @@ Feature {feature-slug} implementation complete but review found issues:
 {list issues}
 
 Fix and re-run: /rpi:review {feature-slug}
+```
+
+## 12. Handle isolation cleanup
+
+Read `isolation` from `.rpi.yaml`.
+
+**If `isolation: none`** — do nothing.
+
+**If `isolation: branch`:**
+Ask the user:
+```
+Feature branch: feature/{feature-slug}
+Want to merge into {main-branch} now? (yes/no)
+```
+If yes:
+```bash
+git checkout {main-branch}
+git merge feature/{feature-slug}
+```
+
+**If `isolation: worktree`:**
+Ask the user:
+```
+Worktree: .worktrees/{feature-slug}
+Branch: feature/{feature-slug}
+Want to merge into {main-branch} and remove the worktree? (yes/no)
+```
+If yes:
+```bash
+cd {project-root}
+git checkout {main-branch}
+git merge feature/{feature-slug}
+git worktree remove .worktrees/{feature-slug}
+```
+If no:
+```
+Worktree preserved at .worktrees/{feature-slug}
+To merge later:
+  git checkout {main-branch} && git merge feature/{feature-slug}
+To remove:
+  git worktree remove .worktrees/{feature-slug}
 ```
 
 </process>

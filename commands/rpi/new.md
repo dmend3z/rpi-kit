@@ -48,10 +48,54 @@ Start with core questions, then ask follow-ups based on answers.
 
 Use AskUserQuestion for structured questions. Keep it conversational — 2-3 questions per batch, max 3 batches. Stop when you have enough to write a clear REQUEST.md.
 
-## 5. Generate REQUEST.md
+## 5. Set up isolation
 
-Create the feature folder and write REQUEST.md:
+Read `isolation` from `.rpi.yaml` (default: `none`).
 
+**If `isolation: none`** — do nothing, continue on current branch.
+
+**If `isolation: branch`:**
+```bash
+git checkout -b feature/{feature-slug}
+```
+
+**If `isolation: worktree`:**
+1. Verify `.worktrees/` is in `.gitignore`:
+   ```bash
+   git check-ignore -q .worktrees 2>/dev/null
+   ```
+   If NOT ignored, add `.worktrees/` to `.gitignore` and commit:
+   ```bash
+   echo ".worktrees/" >> .gitignore
+   git add .gitignore && git commit -m "chore: add .worktrees/ to .gitignore"
+   ```
+2. Create the worktree:
+   ```bash
+   git worktree add .worktrees/{feature-slug} -b feature/{feature-slug}
+   ```
+3. Run project setup in the worktree (auto-detect from project files: `npm install`, `pip install`, etc.)
+4. Inform the user:
+   ```
+   Worktree created at .worktrees/{feature-slug}
+   Branch: feature/{feature-slug}
+
+   To work in the worktree, open a new terminal:
+     cd .worktrees/{feature-slug}
+   ```
+
+## 6. Generate REQUEST.md
+
+Create the feature folder and write REQUEST.md.
+
+**If `isolation: worktree`**, the feature folder is created inside the worktree:
+```bash
+cd .worktrees/{feature-slug}
+mkdir -p {folder}/{feature-slug}/research
+mkdir -p {folder}/{feature-slug}/plan
+mkdir -p {folder}/{feature-slug}/implement
+```
+
+**Otherwise:**
 ```bash
 mkdir -p {folder}/{feature-slug}/research
 mkdir -p {folder}/{feature-slug}/plan
@@ -84,7 +128,7 @@ Write `{folder}/{feature-slug}/REQUEST.md` with this structure:
 {S | M | L | XL} — {brief justification}
 ```
 
-## 6. Next step
+## 7. Next step
 
 Output:
 ```

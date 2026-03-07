@@ -1,7 +1,7 @@
 ---
 name: rpi-workflow
-description: This skill should be used when the user wants to develop a feature systematically, asks "how do I start a new feature", "walk me through the workflow", "help me build this step by step", says "research plan implement", or mentions any RPI command (/rpi:init, /rpi:new, /rpi:research, /rpi:plan, /rpi:implement, /rpi:simplify, /rpi:status, /rpi:review).
-version: 0.1.0
+description: This skill should be used when the user wants to develop a feature systematically, asks "how do I start a new feature", "walk me through the workflow", "help me build this step by step", says "research plan implement", mentions TDD or test-driven development, or mentions any RPI command (/rpi:init, /rpi:new, /rpi:research, /rpi:plan, /rpi:implement, /rpi:test, /rpi:simplify, /rpi:status, /rpi:review).
+version: 0.2.0
 license: MIT
 ---
 
@@ -22,6 +22,10 @@ Run `/rpi:init` once per project to configure:
 Run `/rpi:new` to start. Adaptive interview:
 - Start with core questions: what feature, what problem it solves
 - Ask follow-ups based on answers (who uses it, complexity, constraints, references)
+- Set up isolation based on `isolation` config:
+  - `none`: work on current branch
+  - `branch`: `git checkout -b feature/{slug}`
+  - `worktree`: create `.worktrees/{slug}` with `git worktree add`
 - Generate `{folder}/{feature-slug}/REQUEST.md` with structured sections
 
 REQUEST.md sections: Summary, Problem, Target Users, Constraints, References, Complexity Estimate.
@@ -64,11 +68,21 @@ PLAN.md task format:
 - [ ] **1.1** Task description
   Effort: S | Deps: none
   Files: src/path/to/file.ts
+  Test: returns 200 for valid request with auth token
 
 - [ ] **1.2** Another task
   Effort: M | Deps: 1.1
   Files: src/other/file.ts
+  Test: rejects duplicate entries with 409 conflict
 ```
+
+### Standalone: TDD
+Run `/rpi:test {feature-slug}` to run TDD cycles on individual tasks.
+
+- Works independently of `/rpi:implement` — use when you want TDD on specific tasks
+- Strict RED → GREEN → REFACTOR per task, one test at a time
+- Auto-detects test framework and conventions from the project
+- Flags: `--task <id>` for single task, `--all` for all uncompleted tasks
 
 ### Phase 4: Implement
 Run `/rpi:implement {feature-slug}`.
@@ -80,11 +94,18 @@ Smart execution mode:
 
 Pipeline per phase:
 1. Execute tasks → commit per task
+   - If TDD enabled: RED (write failing test) → VERIFY RED → GREEN (minimal code) → VERIFY GREEN → REFACTOR → commit
+   - If TDD disabled: execute task → commit (original behavior)
 2. Simplify (3 parallel sub-agents: reuse, quality, efficiency)
-3. Review (code-reviewer checks against plan)
+3. Review (code-reviewer checks against plan + test coverage)
 4. Phase verdict: PASS or FAIL
 
 IMPLEMENT.md tracks: task completion with commits, start/end times, files changed, deviations, simplify findings, review verdict.
+
+After implementation, isolation cleanup runs based on config:
+- `none`: nothing
+- `branch`: asks to merge into main branch
+- `worktree`: asks to merge + remove the worktree
 
 ## Configuration (.rpi.yaml)
 
@@ -96,7 +117,9 @@ commit_style: conventional     # Commit message format
 parallel_threshold: 8          # Task count for parallel mode
 skip_artifacts: []             # Artifacts to never generate
 review_after_implement: true   # Mandatory review gate
-branch_per_feature: false      # Create git branch per feature
+isolation: none                # none | branch | worktree
+tdd: false                     # Enable Test-Driven Development
+test_runner: auto              # Test command (auto-detect or explicit)
 ```
 
 ## Feature Folder Structure
