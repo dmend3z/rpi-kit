@@ -36,6 +36,10 @@ Use AskUserQuestion to gather preferences. Ask up to 4 questions at a time:
 - "Task count threshold for parallel execution?" — Options: 8 (Recommended), 5, 12, always sequential
 - "Create a git branch per feature?" — Options: No (Recommended), Yes
 
+**Batch 4 (TDD):**
+- "Enable Test-Driven Development during implementation?" — Options: No (default), Yes
+- If yes: "What command runs your tests?" — Options: auto-detect (Recommended), `npm test`, `npx vitest`, `pytest`, custom
+
 ## 3. Create .rpi.yaml
 
 Write the config file at the project root:
@@ -52,6 +56,8 @@ parallel_threshold: {number}
 skip_artifacts: []
 review_after_implement: true
 branch_per_feature: {true|false}
+tdd: {true|false}
+test_runner: {auto|command}
 ```
 
 ## 4. Create feature folder
