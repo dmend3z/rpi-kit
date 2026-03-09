@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "rpi-kit",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "description": "Research → Plan → Implement. A systematic feature development workflow with validation gates, multi-role agent teams, and adaptive depth.",
   "owner": {
     "name": "Daniel Mendes"
@@ -11,7 +11,7 @@
       "name": "rpi-kit",
       "source": "./",
       "description": "Research → Plan → Implement. A systematic feature development workflow for Claude Code and Codex.",
-      "version": "0.1.0",
+      "version": "1.0.1",
       "author": {
         "name": "Daniel Mendes"
       },
