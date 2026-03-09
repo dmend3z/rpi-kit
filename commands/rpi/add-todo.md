@@ -77,7 +77,7 @@ Priority: {priority}
 
 Quick actions:
   /rpi:new {slug}    Promote to a full RPI feature
-  /rpi:todos         List all pending todos
+  /rpi:status        Show all features and their current phase
 ```
 
 </process>

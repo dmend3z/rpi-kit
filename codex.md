@@ -38,6 +38,8 @@ You follow the RPI (Research → Plan → Implement) workflow for feature develo
 - `/rpi:test <feature>` — Run TDD cycles (RED → GREEN → REFACTOR) per task
 - `/rpi:status` — Show all features and their current phase
 - `/rpi:review <feature>` — Code review against plan
+- `/rpi:docs <feature>` — Generate documentation from artifacts
+- `/rpi:add-todo` — Capture quick implementation ideas
 
 ## Research Tiers
 
@@ -60,6 +62,7 @@ You follow the RPI (Research → Plan → Implement) workflow for feature develo
 | Code Reviewer | Reviews against plan requirements |
 | Codebase Explorer | Scans existing code for patterns and context |
 | Test Engineer | Writes failing tests before implementation (TDD) |
+| Doc Writer | Generates documentation from artifacts |
 
 ## GO/NO-GO Verdicts
 

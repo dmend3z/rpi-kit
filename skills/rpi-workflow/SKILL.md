@@ -1,6 +1,6 @@
 ---
 name: rpi-workflow
-description: This skill should be used when the user wants to develop a feature systematically, asks "how do I start a new feature", "walk me through the workflow", "help me build this step by step", says "research plan implement", mentions TDD or test-driven development, or mentions any RPI command (/rpi:init, /rpi:new, /rpi:research, /rpi:plan, /rpi:implement, /rpi:test, /rpi:simplify, /rpi:status, /rpi:review).
+description: This skill should be used when the user wants to develop a feature systematically, asks "how do I start a new feature", "walk me through the workflow", "help me build this step by step", says "research plan implement", mentions TDD or test-driven development, or mentions any RPI command (/rpi:init, /rpi:new, /rpi:research, /rpi:plan, /rpi:implement, /rpi:test, /rpi:simplify, /rpi:status, /rpi:review, /rpi:docs, /rpi:add-todo).
 version: 0.2.0
 license: MIT
 ---

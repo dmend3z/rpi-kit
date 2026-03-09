@@ -1,6 +1,6 @@
 ---
 name: rpi-agents
-description: This skill should be used when the user asks about RPI agent behavior, rules, or roles, asks "what agents are involved", "how does the code reviewer work", "what are the agent rules", "customize agent behavior", or mentions agent names like requirement-parser, product-manager, ux-designer, senior-engineer, cto-advisor, doc-synthesizer, plan-executor, code-simplifier, code-reviewer, explore-codebase, or test-engineer.
+description: This skill should be used when the user asks about RPI agent behavior, rules, or roles, asks "what agents are involved", "how does the code reviewer work", "what are the agent rules", "customize agent behavior", or mentions agent names like requirement-parser, product-manager, ux-designer, senior-engineer, cto-advisor, doc-synthesizer, plan-executor, code-simplifier, code-reviewer, explore-codebase, test-engineer, or doc-writer.
 version: 1.0.1
 license: MIT
 ---
@@ -35,7 +35,7 @@ End with: `Estimated Complexity: S | M | L | XL`
 
 ## Agent Roles
 
-The RPI workflow uses 10 specialized agents. Each has detailed behavioral rules, anti-patterns, and output formats defined in its own file under `agents/`:
+The RPI workflow uses 12 specialized agents. Each has detailed behavioral rules, anti-patterns, and output formats defined in its own file under `agents/`:
 
 | Agent | Role | Phase |
 |-------|------|-------|
@@ -50,6 +50,7 @@ The RPI workflow uses 10 specialized agents. Each has detailed behavioral rules,
 | plan-executor | Implement tasks from PLAN.md surgically | Implement |
 | code-simplifier | Check reuse, quality, efficiency and fix | Implement |
 | code-reviewer | Review implementation against plan | Implement, Review |
+| doc-writer | Generate documentation from artifacts | Docs |
 
 For full role-specific rules, anti-patterns, and output formats, see the individual agent definitions in `agents/*.md`.
 

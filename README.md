@@ -71,6 +71,8 @@ Copy `AGENTS.md` and `codex.md` to your project root. The workflow rules and age
 | `/rpi:simplify` | Code simplification (reuse, quality, efficiency) |
 | `/rpi:status` | Show all features and their current phase |
 | `/rpi:review` | Code review against plan requirements + test coverage |
+| `/rpi:docs` | Generate documentation from implementation artifacts |
+| `/rpi:add-todo` | Capture quick implementation ideas in `{folder}/todos/` |
 
 ## Research Tiers
 
@@ -84,7 +86,7 @@ Control depth and cost with tier flags:
 
 ## Agent Team
 
-RPIKit simulates a product team with 11 specialized agents:
+RPIKit simulates a product team with 12 specialized agents:
 
 | Agent | Perspective |
 |-------|-------------|
@@ -99,6 +101,7 @@ RPIKit simulates a product team with 11 specialized agents:
 | Test Engineer | Writes failing tests before implementation (TDD) |
 | Code Simplifier | Reuse, quality, efficiency checks with direct fixes |
 | Code Reviewer | Reviews against plan requirements + test coverage |
+| Doc Writer | Generates documentation from artifacts for completed features |
 
 All agents follow behavioral constraints inspired by [Karpathy's coding guidelines](https://x.com/karpathy/status/2015883857489522876): cite evidence, name unknowns, be concrete, stay in scope.
 
@@ -174,7 +177,7 @@ test_runner: auto              # Test command (auto-detect or explicit)
 |---|---|---|---|
 | Focus | Spec-driven artifacts | Feature lifecycle with gates | Full project management |
 | Phases | Fluid (propose/apply) | 3 phases (R→P→I) | Roadmap → phases → tasks |
-| Agents | None | 11 specialized roles | 15+ orchestrated agents |
+| Agents | None | 12 specialized roles | 15+ orchestrated agents |
 | TDD | None | Integrated RED→GREEN→REFACTOR | None |
 | Validation | None | GO/NO-GO research gate | Goal-backward verification |
 | Scope | Single change | Single feature | Entire project |
