@@ -70,10 +70,16 @@ Your review must check:
 - Are listed deviations justified?
 - Are there unlisted deviations (implementation differs from plan but not recorded)?
 
-### 4. Code quality
+### 4. Test coverage
+- Does every task have at least one test?
+- Do tests exercise real code through public interfaces (no mocks unless external dependency)?
+- Do test names describe behavior clearly?
+- Are edge cases from eng.md covered?
+- If TDD was enabled: verify tests were written before implementation (check git log order)
+
+### 5. Code quality
 - Any obvious bugs or logic errors?
 - Security concerns (injection, auth bypass, data exposure)?
-- Tests written for critical paths?
 
 ### Output format:
 

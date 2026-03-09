@@ -9,6 +9,7 @@ You follow the RPI (Research → Plan → Implement) workflow for feature develo
 3. **Track every task.** Implementation uses task-level tracking with commits per task and phase checkpoints.
 4. **Simplify before review.** After implementation, run code simplification (reuse, quality, efficiency) before code review.
 5. **Review against the plan.** Code review checks implementation against plan requirements, not just code quality.
+6. **Test before you code (when TDD enabled).** Write one failing test, verify it fails, write minimal code to pass, verify it passes, refactor. No implementation without a failing test first.
 
 ## File Conventions
 
@@ -34,6 +35,7 @@ You follow the RPI (Research → Plan → Implement) workflow for feature develo
 - `/rpi:plan <feature>` — Generate plan artifacts from research
 - `/rpi:implement <feature>` — Execute plan with task tracking
 - `/rpi:simplify <feature>` — Code simplification (reuse, quality, efficiency)
+- `/rpi:test <feature>` — Run TDD cycles (RED → GREEN → REFACTOR) per task
 - `/rpi:status` — Show all features and their current phase
 - `/rpi:review <feature>` — Code review against plan
 
@@ -57,6 +59,7 @@ You follow the RPI (Research → Plan → Implement) workflow for feature develo
 | Code Simplifier | Reuse, quality, efficiency checks with fixes |
 | Code Reviewer | Reviews against plan requirements |
 | Codebase Explorer | Scans existing code for patterns and context |
+| Test Engineer | Writes failing tests before implementation (TDD) |
 
 ## GO/NO-GO Verdicts
 

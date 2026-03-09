@@ -1,7 +1,7 @@
 ---
 name: rpi-agents
-description: This skill should be used when the user asks about RPI agent behavior, rules, or roles, asks "what agents are involved", "how does the code reviewer work", "what are the agent rules", "customize agent behavior", or mentions agent names like requirement-parser, product-manager, ux-designer, senior-engineer, cto-advisor, doc-synthesizer, plan-executor, code-simplifier, code-reviewer, or explore-codebase.
-version: 0.1.0
+description: This skill should be used when the user asks about RPI agent behavior, rules, or roles, asks "what agents are involved", "how does the code reviewer work", "what are the agent rules", "customize agent behavior", or mentions agent names like requirement-parser, product-manager, ux-designer, senior-engineer, cto-advisor, doc-synthesizer, plan-executor, code-simplifier, code-reviewer, explore-codebase, or test-engineer.
+version: 1.0.1
 license: MIT
 ---
 
@@ -46,6 +46,7 @@ The RPI workflow uses 10 specialized agents. Each has detailed behavioral rules,
 | cto-advisor | Risk, feasibility, strategic alignment | Research (deep) |
 | doc-synthesizer | Merge research outputs into RESEARCH.md | Research |
 | explore-codebase | Scan codebase for patterns and context | Research |
+| test-engineer | Write failing tests before implementation (TDD) | Implement (TDD), Test |
 | plan-executor | Implement tasks from PLAN.md surgically | Implement |
 | code-simplifier | Check reuse, quality, efficiency and fix | Implement |
 | code-reviewer | Review implementation against plan | Implement, Review |

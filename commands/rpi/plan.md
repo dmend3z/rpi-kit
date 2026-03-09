@@ -138,15 +138,17 @@ Format for each task:
 - [ ] **{phase}.{task}** {Task description}
   Effort: S | M | L | XL | Deps: {task IDs or "none"}
   Files: {files to create or modify}
+  Test: {what to test — behavior assertion in plain language}
 
-Group tasks into logical phases (e.g., Phase 1: Data Layer, Phase 2: Business Logic, Phase 3: UI, Phase 4: Testing).
+Group tasks into logical phases (e.g., Phase 1: Data Layer, Phase 2: Business Logic, Phase 3: UI, Phase 4: Integration).
 
 Rules:
 - Every task should be completable in one focused session
 - L or XL tasks should be broken into smaller subtasks
 - Dependencies must be explicit — no circular deps
 - Files listed must be specific paths, not directories
-- Include test tasks for each phase
+- Every task must have a Test field describing what behavior to verify
+- Test descriptions should be assertions, not vague: "returns 404 for missing user" not "test error handling"
 ```
 
 ## 8. Write all artifacts
