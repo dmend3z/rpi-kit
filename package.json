@@ -1,0 +1,39 @@
+{
+  "name": "rpi-kit",
+  "version": "1.0.1",
+  "description": "Research → Plan → Implement. A systematic feature development workflow for Claude Code.",
+  "license": "MIT",
+  "author": "Daniel Mendes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmend3z/rpi-kit.git"
+  },
+  "keywords": [
+    "claude-code",
+    "claude",
+    "ai",
+    "workflow",
+    "feature-development",
+    "tdd",
+    "codex",
+    "agents"
+  ],
+  "bin": {
+    "rpi-kit": "./bin/cli.js"
+  },
+  "files": [
+    ".claude-plugin/",
+    "bin/",
+    "commands/",
+    "agents/",
+    "skills/",
+    "AGENTS.md",
+    "codex.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/cli.test.js test/commands.test.js",
+    "postinstall": "node bin/cli.js install --silent"
+  }
+}
