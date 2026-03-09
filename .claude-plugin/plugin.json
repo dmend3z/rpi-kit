@@ -1,6 +1,6 @@
 {
   "name": "rpi-kit",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Research → Plan → Implement. A systematic feature development workflow with validation gates, multi-role agent teams, and adaptive depth.",
   "author": {
     "name": "Daniel Mendes",
