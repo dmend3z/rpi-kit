@@ -55,9 +55,15 @@ For each feature, read the relevant files to extract:
 - Read PLAN.md to count total tasks and phases
 
 **If implementing:**
-- Read IMPLEMENT.md to count completed tasks `[x]` vs total `[ ]`
-- Identify current task (first unchecked)
-- Check for review verdict
+- Check for checkpoint files in `{folder}/{slug}/implement/checkpoints/`
+- If checkpoints exist:
+  - Read each checkpoint file, parse status and task_id
+  - Count done / blocked / deviated / rolled_back
+  - Identify current task (first unchecked in PLAN.md order that has no checkpoint)
+  - Read latest session file in `sessions/` for session count and tier
+- If no checkpoints (old-style):
+  - Fall back to reading IMPLEMENT.md for `[x]` vs `[ ]` counts
+- Check for review verdict in IMPLEMENT.md
 
 **If complete:**
 - Read IMPLEMENT.md for final review verdict and completion timestamp
@@ -71,7 +77,10 @@ Output a card per feature:
 Phase: {phase} ({progress details})
 Verdict: {GO|GO with concerns|NO-GO|—}
 {Complexity: S|M|L|XL (if known)}
+{Tier: 1|2|3 (context weight: {weight}) (if implementing)}
+{Sessions: {count} (if implementing with checkpoints)}
 {Current: Task {id} — {name} (if implementing)}
+{Blocked: Task {id} — {reason} (if any blocked)}
 {Review: PASS|FAIL (if reviewed)}
 ```
 
@@ -84,6 +93,8 @@ Verdict: {GO|GO with concerns|NO-GO|—}
 Phase: implement (6/9 tasks)
 Verdict: GO
 Complexity: M
+Tier: 2 (context weight: 14.5)
+Sessions: 2
 Current: Task 2.1 — Login component
 
 ## payment-system
