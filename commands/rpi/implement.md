@@ -1,7 +1,7 @@
 ---
 name: rpi:implement
 description: Execute the implementation plan with task-level tracking, smart parallelism, automatic simplification, and mandatory code review.
-argument-hint: "<feature-slug> [--sequential|--parallel] [--skip-simplify] [--skip-review] [--resume]"
+argument-hint: "<feature-slug> [--sequential|--parallel] [--skip-simplify] [--skip-review] [--resume] [--from-task <id>]"
 allowed-tools:
   - Read
   - Write
@@ -29,6 +29,7 @@ Parse `$ARGUMENTS`:
 - `--skip-simplify`: skip the simplify step (overrides config)
 - `--skip-review`: skip the review step (overrides config)
 - `--resume`: resume from last completed task in existing IMPLEMENT.md
+- `--from-task {id}`: resume from a specific task ID (used with --resume)
 
 ## 2. Validate prerequisites
 
@@ -39,20 +40,70 @@ Plan not found. Run /rpi:plan {feature-slug} first.
 
 Also read eng.md (and pm.md, ux.md if they exist) for full context.
 
+## 2b. Detect session isolation tier
+
+Read `session_isolation` from `.rpi.yaml` (default: `auto`).
+
+If `session_isolation: off`, skip all isolation logic. Use current behavior.
+
+If `session_isolation: aggressive`, set tier = 3 and max_tasks = 3.
+
+If `session_isolation: auto`:
+1. Read `## Metadata` section from PLAN.md
+2. Extract `suggested_tier` and `context_weight`
+3. If metadata section missing (old plans), compute from tasks:
+   - Count tasks, unique files, max dependency depth
+   - Calculate context_weight
+4. Recalculate plan_hash from current file contents:
+   ```bash
+   cat {sorted existing files from PLAN.md tasks} | shasum -a 256 | cut -d' ' -f1
+   ```
+5. Compare with `plan_hash` from metadata. If different:
+   ```
+   Codebase has changed since planning.
+   Changed files: {list files where content differs}
+   Options:
+   - Continue anyway (changes may be compatible)
+   - Re-plan: /rpi:plan {feature-slug} --force
+   - Review changes manually
+   ```
+   Use AskUserQuestion to let user decide.
+6. Set tier and max_tasks_per_session based on context_weight:
+   - Tier 1 (weight <= 8): max_tasks = unlimited
+   - Tier 2 (weight 9-18): max_tasks = config value or 5
+   - Tier 3 (weight > 18): max_tasks = config value or 4
+
+Inform user:
+```
+Session isolation: Tier {N} (context weight: {weight})
+{Tier 1: "Single session — no checkpoints needed"}
+{Tier 2: "Session warning after {max_tasks} tasks"}
+{Tier 3: "Forced checkpoints after each wave"}
+```
+
 ## 3. Handle resume
 
 If `--resume` or IMPLEMENT.md already exists:
-- Read IMPLEMENT.md
-- Parse completed tasks (lines with `[x]`)
-- Identify next uncompleted task
-- Inform user: "Resuming from task {id}: {name}"
+1. Read all files in `{folder}/{feature-slug}/implement/checkpoints/`
+2. Parse each checkpoint: extract task_id and status
+3. Build completed set from checkpoints where status == "done"
+4. If `--from-task {id}` specified, resume from that task
+5. Otherwise, find first uncompleted task in PLAN.md order
+6. Count completed tasks to determine session task counter start
+7. Inform user: "Resuming from task {id}: {name} ({completed}/{total} done)"
 
 If IMPLEMENT.md exists and no `--resume`:
 - Ask user: "Implementation in progress ({N}/{total} tasks). Resume or restart?"
 
-## 4. Initialize IMPLEMENT.md
+## 4. Initialize implementation directory
 
-If starting fresh, create `{folder}/{feature-slug}/implement/IMPLEMENT.md`:
+If starting fresh:
+```bash
+mkdir -p {folder}/{feature-slug}/implement/checkpoints
+mkdir -p {folder}/{feature-slug}/implement/sessions
+```
+
+Create `{folder}/{feature-slug}/implement/IMPLEMENT.md`:
 
 ```markdown
 # Implementation: {Feature Title}
