@@ -120,6 +120,8 @@ review_after_implement: true   # Mandatory review gate
 isolation: none                # none | branch | worktree
 tdd: false                     # Enable Test-Driven Development
 test_runner: auto              # Test command (auto-detect or explicit)
+session_isolation: auto        # auto | aggressive | off
+max_tasks_per_session: 5       # tasks before warning/checkpoint
 ```
 
 ## Feature Folder Structure
@@ -135,14 +137,47 @@ test_runner: auto              # Test command (auto-detect or explicit)
 │   ├── ux.md          (adaptive)
 │   └── eng.md
 └── implement/
-    └── IMPLEMENT.md
+    ├── IMPLEMENT.md
+    ├── checkpoints/    (per-task status files)
+    └── sessions/       (session boundary records)
 ```
+
+## Session Isolation
+
+RPI automatically manages session boundaries to prevent context drift in large features.
+
+### How It Works
+
+After `/rpi:plan`, the system computes a **context weight** from task count, files touched, and dependency depth. This determines the isolation tier:
+
+| Tier | Context Weight | Behavior |
+|---|---|---|
+| 1 (Inline) | <= 8 | Single session, no checkpoints |
+| 2 (File-mediated) | 9-18 | Single session, warns after N tasks |
+| 3 (Wave-isolated) | > 18 | Multiple sessions, forced checkpoints per wave |
+
+### Agent Communication
+
+Agents write results to per-task checkpoint files in `implement/checkpoints/`. The orchestrator reads only 1-line status summaries — full agent output never accumulates in the session context.
+
+Each agent receives only: its specific task + eng.md. No conversation history, no full plan, no research output.
+
+### Deviation Handling
+
+Agents classify deviations by severity:
+- **cosmetic** (naming, formatting): auto-accepted
+- **interface** (changed signatures): flags downstream tasks
+- **scope** (did more/less): blocks for human decision
+
+### Resuming
+
+`/rpi:implement {slug} --resume` reads checkpoint files and continues from the last incomplete task with a fresh session context.
 
 ## Cross-Session Continuity
 
 All state lives in markdown files. When resuming:
-- `/rpi:status` shows all features with current phase and progress
-- `/rpi:implement` reads IMPLEMENT.md and resumes from last completed task
+- `/rpi:status` shows all features with current phase, progress, tier, and session count
+- `/rpi:implement` reads checkpoint files and resumes from last completed task
 - Multiple features can be in progress simultaneously
 
 ## Related
