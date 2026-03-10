@@ -56,6 +56,33 @@ Present detection to user with AskUserQuestion:
 
 Apply any `--skip-pm` or `--skip-ux` flags as overrides.
 
+## 3b. Interview user for alignment
+
+Read all research artifacts:
+- `{folder}/{feature-slug}/REQUEST.md`
+- `{folder}/{feature-slug}/research/RESEARCH.md`
+
+Based on the content, interview the user using AskUserQuestion to clarify anything that could affect the plan. Ask about **all relevant dimensions** — not just one:
+
+- **Technical implementation**: preferred patterns, constraints, performance requirements, existing code to build on
+- **UI & UX** (if applicable): expected flows, interaction patterns, states (loading, empty, error), design preferences
+- **Concerns**: risks identified in research, areas of uncertainty, things the user is worried about
+- **Tradeoffs**: decisions surfaced in research that have multiple valid approaches — present options and ask for preference
+- **Scope boundaries**: what explicitly should NOT be in this plan, MVP vs. future
+
+Rules:
+- Ask focused, specific questions based on what you read — not generic ones
+- Reference concrete findings from the research (e.g., "Research found two patterns for X: {A} and {B}. Which do you prefer?")
+- If the research surfaced CONCERN or BLOCK verdicts, ask about those specifically
+- Group related questions together — don't ask one at a time unless a follow-up depends on a previous answer
+- Document the user's answers — they will be passed as additional context to the agents in subsequent steps
+
+After the interview, create a brief alignment summary that will be included in agent prompts:
+```
+## User Alignment Notes
+{Summary of key decisions, preferences, and constraints from the interview}
+```
+
 ## 4. Generate eng.md (always)
 
 Launch senior-engineer agent:
@@ -65,6 +92,9 @@ You are planning the technical implementation for a feature.
 Read these files:
 - {folder}/{feature-slug}/REQUEST.md
 - {folder}/{feature-slug}/research/RESEARCH.md
+
+User Alignment Notes (from interview):
+{alignment_summary}
 
 Produce eng.md — a technical specification covering:
 1. Architecture overview (how it fits into existing codebase)
@@ -88,6 +118,9 @@ Read these files:
 - {folder}/{feature-slug}/REQUEST.md
 - {folder}/{feature-slug}/research/RESEARCH.md
 
+User Alignment Notes (from interview):
+{alignment_summary}
+
 Produce pm.md — product requirements covering:
 1. User stories with acceptance criteria
 2. Scope definition with effort estimates (S/M/L/XL per item)
@@ -107,6 +140,9 @@ You are designing the user experience for a feature.
 Read these files:
 - {folder}/{feature-slug}/REQUEST.md
 - {folder}/{feature-slug}/research/RESEARCH.md
+
+User Alignment Notes (from interview):
+{alignment_summary}
 
 Produce ux.md — UX design covering:
 1. User journey (step-by-step flow from entry to completion)
@@ -131,6 +167,9 @@ Read these files:
 - {folder}/{feature-slug}/plan/eng.md
 - {folder}/{feature-slug}/plan/pm.md (if exists)
 - {folder}/{feature-slug}/plan/ux.md (if exists)
+
+User Alignment Notes (from interview):
+{alignment_summary}
 
 Produce PLAN.md — an ordered task checklist organized by phases.
 
