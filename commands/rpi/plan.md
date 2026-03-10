@@ -149,6 +149,44 @@ Rules:
 - Files listed must be specific paths, not directories
 - Every task must have a Test field describing what behavior to verify
 - Test descriptions should be assertions, not vague: "returns 404 for missing user" not "test error handling"
+- After generating all tasks, count total tasks, unique files, and max dependency depth
+- These metrics will be used for session isolation tier detection
+```
+
+## 7b. Compute plan metadata
+
+After PLAN.md is generated, compute session isolation metrics:
+
+1. Count total tasks in PLAN.md
+2. Count unique files across all task `Files:` fields
+3. Calculate max dependency depth:
+   - For each task, follow its `Deps:` chain to find the longest path
+   - Depth = longest chain length (task with no deps = depth 0)
+4. Compute context weight:
+   ```
+   context_weight = task_count + (total_files * 0.5) + (max_depth * 2)
+   ```
+5. Determine suggested tier:
+   - context_weight <= 8: tier 1
+   - context_weight 9-18: tier 2
+   - context_weight > 18: tier 3
+6. Compute plan hash:
+   - Collect all files listed in task `Files:` fields
+   - For files that exist: read content, sort by path, concatenate
+   - For files to be created: skip (they don't exist yet)
+   - Hash the concatenated content with sha256
+   ```bash
+   cat {sorted existing files} | shasum -a 256 | cut -d' ' -f1
+   ```
+
+Append to the top of PLAN.md (after the title, before Phase 1):
+
+```markdown
+## Metadata
+tasks: {count} | files: {count} | max_depth: {depth}
+context_weight: {weight}
+suggested_tier: {1|2|3}
+plan_hash: {sha256_hash}
 ```
 
 ## 8. Write all artifacts
@@ -168,6 +206,11 @@ Plan created for {feature-slug}:
 - eng.md: Technical specification
 {- pm.md: Product requirements (if generated)}
 {- ux.md: UX design (if generated)}
+
+Session isolation: Tier {1|2|3} (context weight: {weight})
+{If tier 1: "Small feature — single session recommended"}
+{If tier 2: "Medium feature — session warning after {max_tasks_per_session} tasks"}
+{If tier 3: "Large feature — session checkpoints will be enforced"}
 
 Next: /rpi:implement {feature-slug}
 ```
