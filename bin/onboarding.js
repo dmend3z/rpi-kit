@@ -17,7 +17,7 @@ RPIKit is a structured feature development workflow for Claude Code and Codex.
 It guides you through 3 phases with validation gates, so you research before
 you plan, and plan before you code.
 
-${DIM}11 specialized agents simulate a product team:
+${DIM}12 specialized agents simulate a product team:
 engineers, PMs, designers, reviewers — all working in parallel.${RESET}`,
   },
   {
@@ -89,18 +89,15 @@ ${DIM}Or run standalone:${RESET}  /rpi:test your-feature --task 1.2`,
     body: `
 ${BOLD}Step 1:${RESET} Open Claude Code in your project
 
-${BOLD}Step 2:${RESET} Initialize RPIKit
-  ${CYAN}/rpi:init${RESET}
+${BOLD}Step 2:${RESET} Run the interactive onboarding
+  ${CYAN}/rpi:onboarding${RESET}
 
-${BOLD}Step 3:${RESET} Create your first feature
-  ${CYAN}/rpi:new my-feature${RESET}
+${DIM}This will analyze your codebase, generate a project profile,
+suggest features to build, and guide you through your first feature.${RESET}
 
-${BOLD}Step 4:${RESET} Follow the pipeline
-  ${CYAN}/rpi:research my-feature${RESET}
-  ${CYAN}/rpi:plan my-feature${RESET}
-  ${CYAN}/rpi:implement my-feature${RESET}
-
-${DIM}Use /rpi:status anytime to see where you are.${RESET}
+${DIM}Or jump straight in:${RESET}
+  ${CYAN}/rpi:init${RESET}              Configure RPIKit
+  ${CYAN}/rpi:new my-feature${RESET}    Start a feature
 
 ${GREEN}Happy building!${RESET}`,
   },

@@ -1,17 +1,19 @@
 ---
 name: rpi:onboarding
-description: Interactive guided tour of the RPI workflow. Walks through each phase with a real demo feature, explaining what happens at each step.
-argument-hint: "[--demo]"
+description: Analyze your codebase, generate a project profile, suggest features to build, and guide you through your first RPI feature.
+argument-hint: "[--refresh]"
 allowed-tools:
   - Read
   - Write
   - Bash
   - Glob
+  - Grep
+  - Agent
   - AskUserQuestion
 ---
 
 <objective>
-Guide a new user through the RPIKit workflow with clear explanations of each phase. Optionally create a demo feature to show the pipeline in action.
+Auto-analyze the user's codebase with parallel agents, generate a persistent .rpi-profile.md, suggest features to build, and interactively guide the user through their first feature.
 </objective>
 
 <process>
@@ -22,220 +24,402 @@ Output:
 ```
 Welcome to RPIKit — Research, Plan, Implement.
 
-RPIKit is a structured workflow that guides you through 3 phases before writing
-any code. Each phase produces artifacts that feed the next, with validation
-gates that prevent premature implementation.
+RPIKit is a structured workflow that guides you through 3 phases before
+writing any code. Each phase produces artifacts that feed the next, with
+validation gates that prevent premature implementation.
 
-Let me walk you through the pipeline.
+I'm going to analyze your project first, then suggest features you
+could build with RPIKit.
 ```
 
-## 2. Explain the pipeline
+Check if `.rpi-profile.md` already exists and `--refresh` flag is NOT set:
+- If exists: ask "Project profile already exists. Refresh it or skip to feature selection?"
+- If `--refresh`: proceed with fresh analysis regardless
 
-Present the full pipeline with brief descriptions:
+## 2. Codebase Analysis
 
+Output:
 ```
-The RPIKit Pipeline
-───────────────────
-
-  /rpi:init         One-time project setup (.rpi.yaml)
-
-  /rpi:new          Describe your feature → REQUEST.md
-       │            You answer a few questions about what you want to build.
-       │            RPIKit captures requirements in a structured format.
-       ▼
-  /rpi:research     Analyze feasibility → RESEARCH.md
-       │            2-6 agents run in parallel: parsing requirements,
-       │            exploring your codebase, assessing scope and risk.
-       │            Produces a GO / NO-GO verdict.
-       ▼
-  /rpi:plan         Generate specs + tasks → PLAN.md
-       │            Creates technical spec (eng.md), product requirements
-       │            (pm.md), UX design (ux.md), and a task checklist.
-       │            Adapts which artifacts to create based on feature type.
-       ▼
-  /rpi:implement    Execute tasks → IMPLEMENT.md
-       │            Builds the feature task-by-task with per-task commits.
-       │            Supports TDD (Red-Green-Refactor) and parallel execution.
-       ▼
-  /rpi:simplify     Code quality → auto-fix
-       │            3 agents check: code reuse, quality patterns, efficiency.
-       │            Fixes issues directly.
-       ▼
-  /rpi:review       Verify against plan → PASS / FAIL
-       │            Reviews completeness, correctness, deviations, test
-       │            coverage. Every finding cites a plan requirement.
-       ▼
-  /rpi:docs         Document the code → inline docs + changelog
-                    Adds JSDoc/docstrings, API docs, README and changelog
-                    updates. Only runs after review PASS.
-
-  /rpi:status       Dashboard — see all features and their current phase.
+Analyzing your project...
 ```
 
-## 3. Explain the agents
+Launch 3 agents in parallel using the Agent tool in a single message:
+
+### Agent A: Stack & Conventions Scanner
 
 ```
-RPIKit simulates a product team with 12 specialized agents:
+You are analyzing a project's technology stack and coding conventions. This is a READ-ONLY task — do not write any files.
 
-  Research agents (run in parallel):
-  ┌─────────────────────┬──────────────────────────────────────┐
-  │ Requirement Parser  │ Extracts testable requirements       │
-  │ Codebase Explorer   │ Scans your code for patterns         │
-  │ Product Manager     │ Scope, user stories, effort          │
-  │ Senior Engineer     │ Architecture, dependencies           │
-  │ CTO Advisor         │ Risk, strategy (deep tier only)      │
-  │ UX Designer         │ User flows, interactions (if UI)     │
-  │ Doc Synthesizer     │ Merges all outputs into RESEARCH.md  │
-  └─────────────────────┴──────────────────────────────────────┘
+1. Use Glob to find project config files:
+   - package.json, tsconfig.json, tsconfig*.json
+   - Cargo.toml, pyproject.toml, setup.py, setup.cfg
+   - go.mod, Gemfile, composer.json, pom.xml, build.gradle
+   - .eslintrc*, .prettierrc*, biome.json
+   - vite.config.*, next.config.*, webpack.config.*
+   - jest.config.*, vitest.config.*, pytest.ini
+   - docker-compose.yml, Dockerfile
+   - prisma/schema.prisma, drizzle.config.*
 
-  Execution agents:
-  ┌─────────────────────┬──────────────────────────────────────┐
-  │ Plan Executor       │ Implements one task at a time        │
-  │ Test Engineer       │ Writes failing tests (TDD)           │
-  │ Code Simplifier     │ Reuse, quality, efficiency checks    │
-  │ Code Reviewer       │ Reviews against plan requirements    │
-  │ Doc Writer          │ Generates code documentation         │
-  └─────────────────────┴──────────────────────────────────────┘
+2. Read the config files found to identify:
+   - Primary language and version
+   - Framework and version
+   - Database and ORM
+   - Test framework and runner
+   - Linter and formatter
+   - Bundler and build tool
+   - Styling approach (CSS modules, Tailwind, styled-components, etc.)
+
+3. Use Glob to find 5-10 representative source files (pick from different directories):
+   - Read them to detect:
+     - File naming convention (kebab-case, camelCase, PascalCase, snake_case)
+     - Component/module pattern (functional components, classes, modules)
+     - Import style (relative paths, path aliases, barrel exports)
+     - Error handling pattern (try/catch, Result types, custom errors)
+     - API pattern (REST routes, GraphQL resolvers, tRPC procedures)
+
+4. Identify architecture:
+   - Directory structure pattern (src/, app/, lib/, etc.)
+   - Layering (routes → services → repositories, etc.)
+   - Key entry points (main files, layout files, middleware)
+
+Output your findings in this exact format:
+
+## Stack
+- Language: {language} {version}
+- Framework: {framework} {version}
+- Database: {db} via {orm}
+- Testing: {test_framework}
+- Styling: {approach}
+- Linter: {tool}
+- Bundler: {tool}
+
+## Conventions
+- File naming: {pattern}
+- Component pattern: {pattern}
+- Import style: {pattern}
+- Error handling: {pattern}
+- API pattern: {pattern}
+
+## Architecture
+- Pattern: {description}
+- Key directories: {list}
+- Entry points: {list}
 ```
 
-## 4. Explain research tiers
+### Agent B: Code Health Scanner
 
 ```
-Research Tiers — control depth and cost:
+You are analyzing a project's code health. This is a READ-ONLY task — do not write any files.
 
-  --quick      2 agents    "Can we do this?"
-                           Requirements + codebase scan.
-                           Use for small features or feasibility checks.
+1. Use Grep to search for task markers:
+   - Pattern: TODO|FIXME|HACK|XXX|WORKAROUND|BUG
+   - Record: file, line number, and the marker text
+   - Categorize by priority: FIXME/BUG = high, TODO = medium, HACK/XXX/WORKAROUND = low
 
-  --standard   4 agents    "How should we do this?"  (default)
-                           Adds product scope and technical approach.
-                           Use for most features.
+2. Analyze test coverage gaps:
+   - Use Glob to find all source files (*.ts, *.tsx, *.js, *.jsx, *.py, *.rs, *.go, etc.)
+   - Use Glob to find all test files (*.test.*, *.spec.*, *_test.*, test_*.*)
+   - Compare: which source modules have no corresponding test file?
+   - List the untested modules
 
-  --deep       6 agents    "Should we do this?"
-                           Adds strategic risk and UX analysis.
-                           Use for large features or risky changes.
+3. Check for dead code signals:
+   - Use Grep to find exported functions/classes
+   - Use Grep to find imports of those exports
+   - Flag exports with zero imports (potential dead code)
+   - Limit to 5 findings max
+
+4. Check dependency health:
+   - If package.json exists, note how many dependencies and devDependencies
+   - Look for lock file (package-lock.json, yarn.lock, pnpm-lock.yaml)
+   - Note if any dependency versions use '*' or 'latest'
+
+5. Find uncovered error paths:
+   - Use Grep to find try/catch blocks, .catch(), or error handlers
+   - Look for empty catch blocks or catch blocks that only log
+   - Limit to 5 findings max
+
+Output your findings in this exact format:
+
+## Health
+- Task markers: {N} found ({high} high, {med} medium, {low} low priority)
+- Test coverage: {tested}/{total} modules have tests ({percentage}%)
+- Dead code signals: {N} potentially unused exports
+- Dependencies: {N} deps, {M} devDeps, lock file: {yes/no}
+- Uncovered error paths: {N} found
+
+### High Priority Markers
+- {file}:{line} — {marker text}
+
+### Untested Modules
+- {file} — no test file found
+
+### Uncovered Error Paths
+- {file}:{line} — {description}
+
+## Suggested Features (from code health)
+1. [{priority}] {slug} — {description based on findings}
+2. [{priority}] {slug} — {description}
+(Generate 1-3 suggestions based on the most impactful findings)
 ```
 
-## 5. Show folder structure
+### Agent C: Git & History Analyzer
 
 ```
-Feature Folder Structure:
+You are analyzing a project's git history and risk profile. This is a READ-ONLY task — do not write any files.
 
-  rpi/
-  └── your-feature/
-      ├── REQUEST.md              ← What you want to build
-      ├── research/
-      │   └── RESEARCH.md         ← GO/NO-GO analysis
-      ├── plan/
-      │   ├── PLAN.md             ← Task checklist by phases
-      │   ├── eng.md              ← Technical specification
-      │   ├── pm.md               ← Product requirements (adaptive)
-      │   └── ux.md               ← UX design (adaptive)
-      └── implement/
-          ├── IMPLEMENT.md        ← Execution audit trail
-          └── DOCS.md             ← Documentation summary
+1. Run git commands to gather history (last 30 days):
+   ```bash
+   git log --oneline --since="30 days ago" | head -30
+   ```
+   ```bash
+   git shortlog -sn --since="30 days ago"
+   ```
+   ```bash
+   git log --since="30 days ago" --pretty=format: --name-only | sort | uniq -c | sort -rn | head -10
+   ```
 
-Each file is a gate — you can't plan without research, can't implement
-without a plan, can't document without a passing review.
+2. Identify hotspot files (most frequently changed in 30 days)
+
+3. Identify recent focus areas from commit messages:
+   - What themes appear? (auth, payments, UI, refactor, bugfix, etc.)
+
+4. Check for GitHub remote and issues:
+   ```bash
+   git remote get-url origin 2>/dev/null
+   ```
+   If GitHub remote exists, try:
+   ```bash
+   gh issue list --limit 5 --state open 2>/dev/null
+   ```
+   If gh is not available or fails, skip gracefully.
+
+5. Assess risks:
+   - Files changed very frequently (>10 times in 30 days) = churn risk
+   - Single contributor to critical files = bus factor risk
+   - No recent commits in important directories = stale code risk
+
+Output your findings in this exact format:
+
+## Git Insights
+- Commits (30d): {N}
+- Contributors (30d): {N}
+- Most changed files: {file1} ({count}), {file2} ({count}), {file3} ({count})
+- Recent focus: {themes}
+- Open issues: {N} (or "GitHub CLI not available")
+
+## Risks
+- {risk_type}: {description} — {evidence}
+(List 1-5 risks based on findings. If no significant risks, say "No significant risks detected.")
+
+## Suggested Features (from git analysis)
+1. [{priority}] {slug} — {description based on findings}
+(Generate 0-2 suggestions. Only suggest if findings warrant it.)
 ```
 
-## 6. Ask about demo
+## 3. Generate Project Profile
+
+After all 3 agents complete, merge their outputs into `.rpi-profile.md`.
+
+### 3.1 Merge agent outputs
+
+Combine the structured sections from all 3 agents:
+- From Agent A: Stack, Conventions, Architecture
+- From Agent B: Health, Suggested Features
+- From Agent C: Git Insights, Risks, Suggested Features
+
+### 3.2 Deduplicate and rank suggestions
+
+Merge suggested features from Agent B and Agent C:
+- Remove duplicates (same area of code)
+- Rank by priority: HIGH > MEDIUM > LOW
+- Keep top 5 suggestions max
+
+### 3.3 Write .rpi-profile.md
+
+Write the merged profile to `.rpi-profile.md` at the project root:
+
+```markdown
+# Project Profile
+
+Generated: {YYYY-MM-DD HH:mm}
+
+{Stack section from Agent A}
+
+{Conventions section from Agent A}
+
+{Architecture section from Agent A}
+
+{Health section from Agent B}
+
+{Risks section from Agent C}
+
+## Suggested Features
+{Merged and ranked list from Agents B and C}
+1. [{priority}] {slug} — {description}
+   Source: {what finding led to this suggestion}
+2. ...
+
+{Git Insights section from Agent C}
+```
+
+### 3.4 Run /rpi:init if needed
+
+Check if `.rpi.yaml` exists:
+- If yes: read it and confirm with user ("Found existing config. Using it.")
+- If no: run the init flow — ask the 4 batches of questions from `/rpi:init` and create `.rpi.yaml`
+
+### 3.5 Present profile summary
+
+Output a condensed version of the profile:
+```
+Project Profile — saved to .rpi-profile.md
+
+  Stack:    {language} / {framework} / {db}
+  Tests:    {tested}/{total} modules covered ({percentage}%)
+  Health:   {N} TODOs, {M} uncovered error paths
+  Risks:    {risk_count} identified
+  Hotspots: {top_file} ({changes} changes in 30d)
+
+  {N} feature suggestions generated.
+```
+
+## 4. Feature Selection
+
+Present the suggested features from the profile and ask the user what they want to do.
 
 Use AskUserQuestion:
-"Want me to create a demo feature so you can see the pipeline in action? I'll create a small example feature and walk you through each step."
+
+"Based on your project analysis, here are the top suggestions:
+
+{numbered list of suggestions with priority and description}
+
+What would you like to do?"
 
 Options:
-- "Yes, show me a demo" → proceed to step 7
-- "No, I'll start on my own" → skip to step 8
+- "Build one of these features" → ask which one, proceed to Phase 5 option A
+- "Describe my own feature" → proceed to Phase 5 option B
+- "See a demo first" → proceed to Phase 5 option C
+- "I'm done — I'll explore on my own" → proceed to Phase 5 option D
 
-## 7. Demo walkthrough (if user wants demo)
+If user picks "Build one of these features", follow up with AskUserQuestion listing the suggestions as selectable options.
 
-Create a minimal demo feature to show what each artifact looks like:
+## 5. Guided First Feature
 
-### 7.1 Create demo config
+### Option A: Build a suggested feature
 
-If `.rpi.yaml` doesn't exist, create a minimal one:
-```yaml
-folder: rpi
-tier: quick
-auto_simplify: true
-commit_style: conventional
-parallel_threshold: 8
-review_after_implement: true
-isolation: none
-tdd: false
-test_runner: auto
-```
+1. Read the selected suggestion from the profile
+2. Read `.rpi.yaml` for the configured folder
+3. Create the feature folder structure:
+   ```bash
+   mkdir -p {folder}/{slug}/research
+   mkdir -p {folder}/{slug}/plan
+   mkdir -p {folder}/{slug}/implement
+   ```
+4. Pre-fill REQUEST.md using context from the profile and the suggestion:
+   - Summary: from the suggestion description
+   - Problem: from the source finding (TODO, test gap, risk)
+   - Target Users: infer from the codebase context
+   - Constraints: from conventions and architecture in the profile
+   - Complexity Estimate: infer from the suggestion scope
+5. Show the generated REQUEST.md to the user
+6. Output:
+   ```
+   Feature created: {folder}/{slug}/REQUEST.md
 
-### 7.2 Create demo REQUEST.md
+   This is what /rpi:new produces — a structured feature description.
 
-```bash
-mkdir -p rpi/demo-greeting/research
-mkdir -p rpi/demo-greeting/plan
-mkdir -p rpi/demo-greeting/implement
-```
+   Next steps:
+     /rpi:research {slug}    Agents analyze feasibility → GO/NO-GO
+     /rpi:plan {slug}        Generate specs + task checklist
+     /rpi:implement {slug}   Build it task by task
 
-Write `rpi/demo-greeting/REQUEST.md`:
-```markdown
-# Greeting Message
+   Want me to run /rpi:research {slug} now?
+   ```
+7. If user says yes, explain what's about to happen ("Research phase: agents will analyze your codebase and requirements in parallel..."), then suggest they run the command.
 
-## Summary
-Add a simple greeting function that returns a personalized welcome message.
+### Option B: Describe your own feature
 
-## Problem
-The application has no way to greet users by name. This is needed for the onboarding flow.
+1. Explain: "Let's create your first feature. I'll ask a few questions to understand what you want to build."
+2. Run the same interview flow as `/rpi:new`:
+   - Ask: "What feature do you want to build?"
+   - Derive slug from answer
+   - Ask: "What problem does this solve? Who benefits?"
+   - Ask adaptive follow-ups based on answers
+3. Create REQUEST.md in the feature folder
+4. Present next steps as in Option A
 
-## Target Users
-All new users during their first session.
+### Option C: See a demo
 
-## Constraints
-- Must be a pure function (no side effects)
-- Must handle missing or empty names gracefully
+1. If `.rpi.yaml` doesn't exist, create a minimal one with defaults
+2. Create demo folder and REQUEST.md:
+   ```bash
+   mkdir -p {folder}/demo-greeting/research
+   mkdir -p {folder}/demo-greeting/plan
+   mkdir -p {folder}/demo-greeting/implement
+   ```
+3. Write `{folder}/demo-greeting/REQUEST.md`:
+   ```markdown
+   # Greeting Message
 
-## References
-- None
+   ## Summary
+   Add a simple greeting function that returns a personalized welcome message.
 
-## Complexity Estimate
-S — Single function with basic input validation
-```
+   ## Problem
+   The application has no way to greet users by name.
 
-### 7.3 Explain what just happened
+   ## Target Users
+   All new users during their first session.
+
+   ## Constraints
+   - Must be a pure function (no side effects)
+   - Must handle missing or empty names gracefully
+
+   ## References
+   - None
+
+   ## Complexity Estimate
+   S — Single function with basic input validation
+   ```
+4. Explain each section:
+   ```
+   I created a demo feature: {folder}/demo-greeting/
+
+   This is what /rpi:new produces. Let me walk through the sections:
+
+     Summary      → One-line description of the feature
+     Problem      → Why this is needed, who's affected
+     Target Users → Who will use it
+     Constraints  → Technical and business boundaries
+     Complexity   → Rough size estimate (S/M/L/XL)
+
+   In a real workflow, the next steps would be:
+     /rpi:research demo-greeting    → agents analyze feasibility
+     /rpi:plan demo-greeting        → generate specs and task checklist
+     /rpi:implement demo-greeting   → build it task by task
+
+   You can run these commands now, or clean up the demo:
+     rm -rf {folder}/demo-greeting
+   ```
+
+### Option D: Exit
 
 Output:
 ```
-I created a demo feature: rpi/demo-greeting/
+Your project profile is saved at .rpi-profile.md
+RPIKit agents will use it for better context in all future commands.
 
-This is what /rpi:new does — it interviews you about your feature and creates
-REQUEST.md with structured requirements.
-
-In a real workflow, the next steps would be:
-  /rpi:research demo-greeting    → agents analyze feasibility
-  /rpi:plan demo-greeting        → generate specs and task checklist
-  /rpi:implement demo-greeting   → build it task by task
-
-You can run these commands now to see the full pipeline, or delete the demo:
-  rm -rf rpi/demo-greeting
-```
-
-## 8. Next steps
-
-Output:
-```
-You're ready to go! Here's your first workflow:
-
-  1. /rpi:init                    Set up your preferences
-  2. /rpi:new my-feature          Describe what you want to build
-  3. /rpi:research my-feature     Let the agents analyze it
-  4. /rpi:plan my-feature         Generate the implementation plan
-  5. /rpi:implement my-feature    Build it
-
-Use /rpi:status anytime to see where your features stand.
+Quick reference:
+  /rpi:new my-feature          Start a new feature
+  /rpi:research my-feature     Analyze feasibility
+  /rpi:plan my-feature         Generate implementation plan
+  /rpi:implement my-feature    Build it
+  /rpi:status                  See all features
 
 Tips:
   - Start with --quick tier for small features
-  - Use --deep tier when adding new architecture or risky dependencies
-  - Enable tdd: true in .rpi.yaml if you want test-first development
-  - Run /rpi:simplify anytime to check code quality on recent changes
+  - Use --deep tier for risky or large changes
+  - Enable tdd: true in .rpi.yaml for test-first development
+  - Run /rpi:onboarding --refresh to re-analyze your project anytime
 ```
 
 </process>
