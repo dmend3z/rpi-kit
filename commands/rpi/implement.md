@@ -322,18 +322,57 @@ If any task in a wave reports `status: blocked`:
    ```
 7. Stop execution (do not proceed to next wave)
 
+## 6d. Session checkpoint
+
+Triggered by:
+- Tier 2: user agrees to take a break after session warning
+- Tier 3: after every wave completes
+
+### Checkpoint process:
+
+1. **Aggregate IMPLEMENT.md** from checkpoint files:
+   - Read all files in `{folder}/{feature-slug}/implement/checkpoints/`
+   - Sort by task ID
+   - Build IMPLEMENT.md with all task statuses, files changed, deviations
+   - Preserve existing sections (Simplify Findings, Review) if present
+
+2. **Write session record** to `{folder}/{feature-slug}/implement/sessions/session-{N}.md`:
+   ```markdown
+   # Session {N}
+   Started: {timestamp}
+   Ended: {timestamp}
+   Tier: {tier}
+   Tasks completed: {list of task IDs completed this session}
+   Total progress: {completed}/{total}
+   Next task: {next_task_id}
+   Deviations: {summary or "none"}
+   ```
+
+3. **Print resume command**:
+   ```
+   Session checkpoint saved.
+   Completed: {completed}/{total} tasks
+   To continue in a new session:
+   /rpi:implement {feature-slug} --resume
+   ```
+
+4. **For Tier 3: stop execution**. The user must start a new session.
+   For Tier 2: continue if user wants to, or stop.
+
 ## 7. Phase checkpoint
 
-After all tasks in a phase complete:
+After all tasks in a PLAN.md phase complete:
 
-Output:
-```
-Phase {N}: {Phase Name}
-Tasks: {completed}/{total}
-Commits: {list}
-```
-
-If any tasks failed or were blocked, ask user how to proceed.
+1. Read checkpoint files for all tasks in the phase
+2. Count completed vs blocked vs deviated
+3. Output:
+   ```
+   Phase {N}: {Phase Name}
+   Tasks: {completed}/{total}
+   Commits: {list from checkpoint files}
+   Deviations: {count by severity}
+   ```
+4. If any tasks blocked, ask user how to proceed before next phase
 
 ## 8. Run simplify (unless --skip-simplify)
 
@@ -351,14 +390,19 @@ Record verdict in IMPLEMENT.md under "## Review".
 
 ## 10. Finalize IMPLEMENT.md
 
-Update IMPLEMENT.md with:
+Rebuild IMPLEMENT.md from all checkpoint files:
+1. Read all files in `checkpoints/`
+2. Build task list with statuses, commits, deviations
+3. Append summary:
+
 ```markdown
 ## Summary
 
 Completed: {timestamp}
 Total tasks: {N}
-Commits: {list with hashes}
-Phases: {M}
+Sessions: {count from sessions/ directory}
+Commits: {list with hashes from checkpoints}
+Deviations: {count by severity}
 
 ## Review Verdict: {PASS|FAIL}
 {details}
