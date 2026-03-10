@@ -260,6 +260,68 @@ For each task in order (respecting dependencies):
    g. **Rollback check** (see section 6c)
 4. After each wave, **forced session checkpoint** (see section 6d)
 
+## 6b. Handle deviations
+
+After each task (all tiers) or after each wave (Tier 3):
+
+1. Parse the status line for deviations
+2. If `deviations: none` — continue
+3. If deviation reported, read the checkpoint file to get severity:
+   - `cosmetic`: log in IMPLEMENT.md, continue automatically
+   - `interface`:
+     a. Read PLAN.md to find tasks that depend on the current task
+     b. Check if any dependent task's `Files:` field overlaps with the deviated files
+     c. If overlap: pause execution, ask user:
+        ```
+        Task {task_id} changed an interface ({description}).
+        Downstream tasks that may be affected: {list}
+        Options:
+        - Continue (downstream agents will read the actual code)
+        - Pause and review the change
+        - Revert task {task_id} and re-plan
+        ```
+     d. If no overlap: log, continue
+   - `scope`:
+     a. Pause execution immediately
+     b. Read full checkpoint file for details
+     c. Ask user:
+        ```
+        Task {task_id} deviated in scope: {description}
+        Options:
+        - Accept the deviation and continue
+        - Revert task {task_id}: git revert {commit_hash}
+        - Stop implementation for manual review
+        ```
+
+## 6c. Rollback protocol (Tier 3 parallel waves only)
+
+If any task in a wave reports `status: blocked`:
+
+1. Identify the blocked task and its reason
+2. Read PLAN.md dependency graph
+3. Find completed tasks in the SAME wave that depend on the blocked task:
+   ```
+   invalidated = [t for t in wave_completed if blocked_task_id in t.deps]
+   ```
+4. For each invalidated task:
+   a. Read its checkpoint file to get commit hash
+   b. Run: `git revert {commit_hash} --no-commit`
+   c. Update checkpoint file: `status: rolled_back`
+5. If any reverts were staged:
+   ```bash
+   git commit -m "revert: rollback tasks {list} due to {blocked_task_id} failure"
+   ```
+6. Inform user:
+   ```
+   Task {blocked_task_id} blocked: {reason}
+   Rolled back dependent tasks: {list}
+   Kept independent tasks: {list}
+
+   Fix the blocker and resume:
+   /rpi:implement {feature-slug} --resume --from-task {blocked_task_id}
+   ```
+7. Stop execution (do not proceed to next wave)
+
 ## 7. Phase checkpoint
 
 After all tasks in a phase complete:
