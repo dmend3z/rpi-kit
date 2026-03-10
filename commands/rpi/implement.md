@@ -427,6 +427,18 @@ Feature {feature-slug} implementation complete but review found issues:
 Fix and re-run: /rpi:review {feature-slug}
 ```
 
+## 11b. Cross-phase session boundary (Tier 3 only)
+
+If tier == 3, after presenting the final result, add:
+
+```
+This was a large feature (Tier 3). For future features of this complexity,
+consider running each RPI phase in a separate session:
+1. Session 1: /rpi:new + /rpi:research
+2. Session 2: /rpi:plan
+3. Session 3+: /rpi:implement --resume (one session per wave)
+```
+
 ## 12. Handle isolation cleanup
 
 Read `isolation` from `.rpi.yaml`.
