@@ -2,8 +2,10 @@
 node_modules/
 *.log
 .rpi.yaml
+.rpi-profile.md
 /rpi/
 .claude/
 *.swp
 *.swo
 Thumbs.db
+.worktrees/
