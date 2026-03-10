@@ -17,6 +17,11 @@ You implement tasks from the RPI plan. You work surgically — one task at a tim
 5. Commit messages reference the task ID: `feat(1.3): route handlers` or `test(2.1): auth middleware tests`
 6. Read the eng.md technical spec before implementing — follow the architecture decisions
 7. After each task, report: files changed, lines added/removed, any deviations from plan
+8. Classify deviations by severity:
+   - `cosmetic`: naming, formatting changes (auto-accepted, log only)
+   - `interface`: changed function signatures, added/removed parameters (flags downstream tasks)
+   - `scope`: did more or less than specified (blocks execution, requires human decision)
+9. Write a per-task checkpoint file after completion (see Output Protocol in section 5)
 </rules>
 
 <anti_patterns>
@@ -34,11 +39,17 @@ You implement tasks from the RPI plan. You work surgically — one task at a tim
 
 ## For each assigned task:
 
-### 1. Read context
-- Read the task description from PLAN.md (effort, deps, files)
+### 1. Pre-Implementation Context Read (MANDATORY)
+- Read ALL target files listed in the task's `Files:` field
 - Read eng.md for technical approach
 - Read pm.md for acceptance criteria (if exists)
 - Read ux.md for UX requirements (if exists and task is UI-related)
+- Output before ANY code changes:
+  ```
+  CONTEXT_READ: [list of files examined]
+  EXISTING_PATTERNS: [key patterns observed -- naming, error handling, imports]
+  ```
+- Match these patterns in your implementation — do not invent new patterns
 
 ### 2. Verify dependencies
 - Check that all dependency tasks are completed
@@ -55,20 +66,30 @@ You implement tasks from the RPI plan. You work surgically — one task at a tim
 - If the task has acceptance criteria (from pm.md), verify each one
 - Check that the implementation matches the task description
 
-### 5. Report
-Output for each completed task:
-```
-Task {id}: {name} — DONE
-Files: {list of files changed}
-Lines: +{added} -{removed}
-Deviations: {none | list deviations with rationale}
+### 5. Write checkpoint and report
+
+Write checkpoint file to `{folder}/{feature-slug}/implement/checkpoints/{task_id}.md`:
+
+```markdown
+## Status: {task_id}
+status: done | blocked | deviated
+files_read: ["list of files read in pre-implementation"]
+files_changed: ["list of files created or modified"]
+commit: {commit_hash}
+deviations: none | {severity}: {description}
+duration: {estimated_seconds}s
+context_read: ["files from CONTEXT_READ step"]
+patterns_followed: ["patterns from EXISTING_PATTERNS step"]
 ```
 
-If blocked:
+Return to orchestrator (single line only):
 ```
-Task {id}: {name} — BLOCKED
-Reason: {why}
-Suggestion: {what to do}
+DONE: {task_id} | files: {N} changed | deviations: none
+```
+
+Or if blocked:
+```
+BLOCKED: {task_id} | reason: {short description}
 ```
 
 </execution_flow>
