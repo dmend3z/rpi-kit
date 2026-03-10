@@ -139,128 +139,126 @@ Otherwise, use smart default:
 
 ## 6. Execute tasks
 
-### Single agent mode:
+Initialize session task counter: `tasks_this_session = 0`
 
-For each task in order (respecting dependencies):
+### 6a. Agent prompt template (all tiers)
 
-1. Read PLAN.md task details (files, deps, test spec if present)
-2. Read eng.md for technical context
+For each task, construct the agent prompt:
+
+```
+You are the plan-executor agent for the RPI workflow.
+
+## Pre-Implementation (MANDATORY)
+Before writing ANY code, read ALL target files and output:
+CONTEXT_READ: [list of files examined]
+EXISTING_PATTERNS: [key patterns observed -- naming, error handling, imports]
+
+## Your Task
+**{task_id}** {task_description}
+Effort: {effort}
+Files: {files}
+Test: {test_spec from PLAN.md, if present}
+
+## Technical Context
+{contents of eng.md}
+
+## Rules
+- Only touch files listed for this task
+- Match patterns from CONTEXT_READ -- do not invent new patterns
+- If blocked, report the blocker -- don't improvise
+- Classify any deviations: cosmetic | interface | scope
+
+## Output Protocol
+Write checkpoint to `{folder}/{feature-slug}/implement/checkpoints/{task_id}.md`:
+
+## Status: {task_id}
+status: done | blocked | deviated
+files_read: ["files examined"]
+files_changed: ["files modified"]
+commit: {hash}
+deviations: none | {severity}: {description}
+duration: {seconds}s
+context_read: ["files from CONTEXT_READ"]
+patterns_followed: ["observed patterns"]
+
+Return single line: `DONE: {task_id} | files: N | deviations: none`
+```
 
 #### If TDD is enabled (`tdd: true` in config):
 
-Follow strict RED → GREEN → REFACTOR per task:
+Before launching plan-executor, run TDD cycle per task:
 
 **RED — Write failing test:**
-3a. Launch test-engineer agent:
+Launch test-engineer agent:
+```
+You are the test-engineer agent for the RPI workflow.
+
+Read these files for context:
+- {folder}/{feature-slug}/plan/PLAN.md
+- {folder}/{feature-slug}/plan/eng.md
+
+Current task:
+**{task_id}** {task_description}
+Files: {files}
+Test: {test_spec from PLAN.md, if present}
+
+Write ONE failing test for this task.
+- Exercise real code through public interfaces
+- Clear, behavior-describing test name
+- Minimal assertions — one logical check
+- Follow project test conventions
+- Do NOT write implementation code
+```
+
+**VERIFY RED:** Run test → must fail for expected reason.
+**GREEN:** Launch plan-executor with the prompt template above, adding: "The following test is FAILING: {test_file}:{test_name}. Write MINIMAL code to pass it."
+**VERIFY GREEN:** Run test + full suite → all pass.
+**REFACTOR:** Clean up, re-run tests.
+**Additional cycles:** Repeat RED → GREEN → REFACTOR for each test scenario.
+
+### Tier 1 execution (Inline — weight <= 8):
+
+For each task in order (respecting dependencies):
+1. Launch plan-executor agent (foreground) with the prompt template
+2. Agent returns full result
+3. Extract status line from result. Discard rest.
+4. Increment `tasks_this_session`
+5. If config `commit_style` is `conventional`: verify agent committed, or stage and commit
+6. Proceed to next task
+
+### Tier 2 execution (File-mediated — weight 9-18):
+
+For each task in order (respecting dependencies):
+1. Launch plan-executor agent (foreground) with the prompt template
+2. Agent writes checkpoint file and returns 1-line status
+3. Parse status line only. Do NOT read the full agent response for context.
+4. Increment `tasks_this_session`
+5. If config `commit_style` is `conventional`: verify agent committed
+6. **Session warning check**: if `tasks_this_session >= max_tasks_per_session`:
    ```
-   You are the test-engineer agent for the RPI workflow.
-
-   Read these files for context:
-   - {folder}/{feature-slug}/plan/PLAN.md
-   - {folder}/{feature-slug}/plan/eng.md
-
-   Current task:
-   **{task_id}** {task_description}
-   Files: {files}
-   Test: {test_spec from PLAN.md, if present}
-
-   Write ONE failing test for this task.
-   - Exercise real code through public interfaces
-   - Clear, behavior-describing test name
-   - Minimal assertions — one logical check
-   - Follow project test conventions
-   - Do NOT write implementation code
+   Session getting long ({tasks_this_session} tasks completed).
+   Consider starting a new session for better accuracy:
+   /rpi:implement {feature-slug} --resume
    ```
+   Continue if user wants to proceed.
+7. Proceed to next task
 
-**VERIFY RED — Confirm correct failure:**
-3b. Run the test:
-   ```bash
-   {test_runner} {test_file}
-   ```
-   - Test fails for expected reason → proceed
-   - Test errors (syntax/import) → fix test, re-run
-   - Test passes → behavior exists already, skip or ask user
-
-**GREEN — Minimal implementation:**
-3c. Launch plan-executor agent:
-   ```
-   You are implementing a single task using TDD.
-
-   The following test is currently FAILING:
-   {test_file}:{test_name}
-   Failure: {failure_reason}
-
-   Write the MINIMAL code to make this test pass.
-   - Only touch files listed for this task
-   - Do NOT add features beyond what the test requires
-   - Match existing code style
-   - If blocked, report the blocker — don't improvise
-   ```
-
-**VERIFY GREEN — Confirm pass:**
-3d. Run the test again:
-   ```bash
-   {test_runner} {test_file}
-   ```
-   Run full suite to check regressions:
-   ```bash
-   {test_runner}
-   ```
-   - All pass → proceed to REFACTOR
-   - Target fails → fix implementation (not the test), re-run
-   - Other tests break → fix regressions first
-
-**REFACTOR — Clean up:**
-3e. Review implementation: remove duplication, improve names, extract helpers if 3+ uses.
-   Re-run tests to confirm still green.
-
-**Additional test cycles:**
-3f. If the task has multiple test scenarios (from test spec or eng.md edge cases), repeat RED → GREEN → REFACTOR for each additional test before moving to next task.
-
-#### If TDD is disabled (default):
-
-3. Launch plan-executor agent:
-   ```
-   You are implementing a single task from the RPI plan.
-
-   Read these files for context:
-   - {folder}/{feature-slug}/plan/PLAN.md
-   - {folder}/{feature-slug}/plan/eng.md
-   - {additional plan files if they exist}
-
-   Current task:
-   **{task_id}** {task_description}
-   Effort: {effort} | Files: {files}
-
-   Rules:
-   - Only touch files listed for this task
-   - Match existing code style
-   - If blocked, report the blocker — don't improvise
-   - When done, report: files changed, any deviations
-   ```
-
-#### After task completion (both modes):
-
-4. Update IMPLEMENT.md:
-   - Mark task as `[x]` with timestamp
-   - Record files changed
-   - Record any deviations
-   - If TDD: record tests written and pass/fail status
-5. If config `commit_style` is `conventional`:
-   - Stage changed files
-   - Commit: `{type}({task_id}): {task_description}`
-
-### Parallel wave mode:
+### Tier 3 execution (Wave-isolated — weight > 18):
 
 1. Group tasks by phase from PLAN.md
 2. Within each phase, identify dependency waves:
    - Wave 1: tasks with no deps (or deps already completed)
    - Wave 2: tasks depending only on wave 1
    - Wave 3: tasks depending on waves 1-2
-3. For each wave, launch all tasks as parallel agents
-4. Wait for all wave agents to complete
-5. Update IMPLEMENT.md with all completed tasks
-6. Proceed to next wave
+3. For each wave:
+   a. Launch ALL wave tasks as parallel foreground agents (one message, multiple Agent calls)
+   b. Each agent uses the prompt template
+   c. Wait for all agents in wave to complete
+   d. For each completed agent, parse status line only
+   e. Increment `tasks_this_session` by wave size
+   f. **Deviation check** (see section 6b)
+   g. **Rollback check** (see section 6c)
+4. After each wave, **forced session checkpoint** (see section 6d)
 
 ## 7. Phase checkpoint
 
