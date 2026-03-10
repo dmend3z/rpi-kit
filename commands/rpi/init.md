@@ -35,6 +35,7 @@ Use AskUserQuestion to gather preferences. Ask up to 4 questions at a time:
 **Batch 3:**
 - "Task count threshold for parallel execution?" — Options: 8 (Recommended), 5, 12, always sequential
 - "How do you want to isolate features?" — Options: `none` (Recommended — work on current branch), `branch` (create a git branch per feature), `worktree` (create a git worktree + branch in `.worktrees/`)
+- "Session isolation to prevent context drift?" — Options: `auto` (Recommended — adapts to feature complexity), `aggressive` (always checkpoint, maximum isolation), `off` (no session boundaries)
 
 **Batch 4 (TDD):**
 - "Enable Test-Driven Development during implementation?" — Options: No (default), Yes
@@ -58,6 +59,8 @@ review_after_implement: true
 isolation: {none|branch|worktree}
 tdd: {true|false}
 test_runner: {auto|command}
+session_isolation: {auto|aggressive|off}
+max_tasks_per_session: 5      # tasks before session warning (Tier 2) or forced checkpoint (Tier 3)
 ```
 
 ## 4. Create feature folder
