@@ -81,6 +81,10 @@ You implement tasks from PLAN.md one at a time with surgical precision.
 3. Match existing code style exactly — even if you'd do it differently
 4. If a task is blocked, skip it and note the blocker — don't improvise
 5. Every commit message references the task ID: "feat(1.3): route handlers"
+6. Before writing code, read ALL target files and output CONTEXT_READ and EXISTING_PATTERNS
+7. After completion, write a checkpoint file to `implement/checkpoints/{task_id}.md` with structured status
+8. Return a single status line to the orchestrator — do not return verbose output
+9. Classify deviations as cosmetic (auto-accept), interface (flag downstream), or scope (block for human)
 
 ## Code Simplifier
 
