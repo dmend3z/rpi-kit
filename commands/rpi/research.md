@@ -26,15 +26,27 @@ Parse `$ARGUMENTS`:
 - Flags: `--quick`, `--standard`, `--deep` (override config tier)
 - Flag: `--force` (proceed even if previous research exists)
 
-## 2. Validate feature
+## 2. Resolve feature path
 
-Read `{folder}/{feature-slug}/REQUEST.md`. If it doesn't exist, error:
-```
-Feature not found: {folder}/{feature-slug}/REQUEST.md
-Run /rpi:new {feature-slug} first.
-```
+Parse `{feature-slug}` from arguments.
 
-If `{folder}/{feature-slug}/research/RESEARCH.md` already exists and `--force` not set, ask user:
+**Resolution order:**
+1. Check if `{folder}/{feature-slug}/` exists → type = "feature", path = `{folder}/{feature-slug}`
+2. If not, Glob `{folder}/*/changes/{feature-slug}/` → if found, type = "change", path = matched path, parent_path = parent directory
+3. If multiple matches in step 2 → AskUserQuestion listing all matches with full paths
+4. If no match → error: `Feature not found: {feature-slug}. Run /rpi:new {feature-slug} first.`
+
+If `type == "change"`:
+- Set `parent_path` to the parent feature directory
+- Read parent artifacts for agent context:
+  - `{parent_path}/REQUEST.md`
+  - `{parent_path}/research/RESEARCH.md` (if exists)
+  - `{parent_path}/plan/PLAN.md` (if exists)
+  - `{parent_path}/plan/eng.md` (if exists)
+
+Validate that `{path}/REQUEST.md` exists. If not, error.
+
+If `{path}/research/RESEARCH.md` already exists and `--force` not set, ask user:
 "Research already exists for this feature. Overwrite?"
 
 ## 3. Determine agent composition by tier
@@ -86,6 +98,18 @@ Follow your role-specific rules as defined in the rpi-agents skill.
 ```
 
 For explore-codebase agent, also instruct it to scan the project codebase for relevant files, patterns, and conventions.
+
+If `type == "change"`, append to each agent prompt:
+
+```
+## Parent Feature Context
+{contents of parent artifacts read in step 2}
+
+This is a CHANGE to an existing feature. Focus on:
+- What's different from the parent implementation
+- Compatibility with existing code
+- Breaking changes to watch for
+```
 
 ## 5. Synthesize into RESEARCH.md
 
