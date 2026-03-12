@@ -153,6 +153,47 @@ describe("command cross-references", () => {
     assert.match(content, /plan-executor/);
   });
 
+  it("new.md supports changes for existing features", () => {
+    const content = fs.readFileSync(
+      path.join(COMMANDS_DIR, "new.md"),
+      "utf8"
+    );
+    assert.match(content, /changes/, "new.md should reference changes concept");
+    assert.match(content, /change-slug/, "new.md should use change-slug");
+    assert.match(content, /Parent Feature/, "new.md should have parent feature template");
+    assert.match(content, /Breaking Changes/, "new.md should have breaking changes section");
+  });
+
+  it("downstream commands have resolve feature path logic", () => {
+    const downstreamCommands = ["research", "plan", "implement", "review", "simplify"];
+
+    for (const cmd of downstreamCommands) {
+      const content = fs.readFileSync(
+        path.join(COMMANDS_DIR, `${cmd}.md`),
+        "utf8"
+      );
+      assert.match(
+        content,
+        /Resolve feature path|Resolution order/i,
+        `${cmd}.md should have resolve feature path logic`
+      );
+      assert.match(
+        content,
+        /changes/,
+        `${cmd}.md should reference changes`
+      );
+    }
+  });
+
+  it("status.md supports hierarchical change display", () => {
+    const content = fs.readFileSync(
+      path.join(COMMANDS_DIR, "status.md"),
+      "utf8"
+    );
+    assert.match(content, /└─/, "status.md should use tree characters for changes");
+    assert.match(content, /changes/, "status.md should reference changes discovery");
+  });
+
   it("pipeline commands reference next step", () => {
     const pipeline = [
       { cmd: "new", next: "/rpi:research" },
