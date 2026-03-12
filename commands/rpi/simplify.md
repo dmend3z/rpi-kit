@@ -18,10 +18,19 @@ Run 3 parallel code review sub-agents (reuse, quality, efficiency) on the implem
 
 <process>
 
-## 1. Load config and identify changes
+## 1. Load config, resolve path, and identify changes
 
 Read `.rpi.yaml` for folder path.
-Read `{folder}/{feature-slug}/implement/IMPLEMENT.md` to identify what was implemented.
+
+Parse `{feature-slug}` from arguments.
+
+**Resolution order:**
+1. Check if `{folder}/{feature-slug}/` exists → type = "feature", path = `{folder}/{feature-slug}`
+2. If not, Glob `{folder}/*/changes/{feature-slug}/` → if found, type = "change", path = matched path, parent_path = parent directory
+3. If multiple matches → AskUserQuestion listing all matches with full paths
+4. If no match → error: `Feature not found: {feature-slug}`
+
+Read `{path}/implement/IMPLEMENT.md` to identify what was implemented.
 
 Get the diff of all implementation changes:
 ```bash
