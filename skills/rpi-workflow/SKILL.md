@@ -1,6 +1,6 @@
 ---
 name: rpi-workflow
-description: This skill should be used when the user wants to develop a feature systematically, asks "how do I start a new feature", "walk me through the workflow", "help me build this step by step", says "research plan implement", mentions TDD or test-driven development, or mentions any RPI command (/rpi:init, /rpi:new, /rpi:research, /rpi:plan, /rpi:implement, /rpi:test, /rpi:simplify, /rpi:status, /rpi:review, /rpi:docs, /rpi:add-todo).
+description: This skill should be used when the user wants to develop a feature systematically, asks "how do I start a new feature", "walk me through the workflow", "help me build this step by step", says "research plan implement", mentions TDD or test-driven development, mentions model profiles or model selection, or mentions any RPI command (/rpi:init, /rpi:new, /rpi:research, /rpi:plan, /rpi:implement, /rpi:test, /rpi:simplify, /rpi:status, /rpi:review, /rpi:docs, /rpi:add-todo, /rpi:set-profile).
 version: 0.2.0
 license: MIT
 ---
@@ -122,7 +122,69 @@ tdd: false                     # Enable Test-Driven Development
 test_runner: auto              # Test command (auto-detect or explicit)
 session_isolation: auto        # auto | aggressive | off
 max_tasks_per_session: 5       # tasks before warning/checkpoint
+profile: balanced              # quality-first | balanced | speed-first | budget (optional)
+models:                        # Per-phase overrides (optional, takes precedence over profile)
+  # research: opus
+  # plan: opus
+  # implement: sonnet
+  # review: opus
 ```
+
+## Model Resolution Algorithm
+
+When a command spawns an agent, it resolves which model to use for the Agent tool's `model` parameter. The algorithm is:
+
+### Resolution Order
+
+1. **Per-phase override**: If `.rpi.yaml` has a `models.{phase}` value, use it.
+2. **Profile default**: If `.rpi.yaml` has a `profile` value, look up the model for this phase in the profile table below.
+3. **Inherit parent**: If neither is set, omit the `model` parameter entirely. The agent inherits the parent session's model (current default behavior).
+
+### Profile Lookup Table
+
+| Profile | research | plan | implement | review |
+|---------|----------|------|-----------|--------|
+| `quality-first` | opus | opus | opus | opus |
+| `balanced` | opus | opus | sonnet | opus |
+| `speed-first` | sonnet | sonnet | sonnet | sonnet |
+| `budget` | haiku | sonnet | haiku | sonnet |
+
+Note: The budget profile uses haiku for research and implement phases.
+Research quality may degrade with haiku -- research agents require structured
+analysis with citations and evidence. Recommended for small or simple features only.
+
+### Phase-to-Command Mapping
+
+| Phase | Commands |
+|-------|----------|
+| `research` | `/rpi:research` |
+| `plan` | `/rpi:plan` |
+| `implement` | `/rpi:implement`, `/rpi:test`, `/rpi:simplify` |
+| `review` | `/rpi:review`, `/rpi:docs` |
+
+Commands without a phase (`/rpi:init`, `/rpi:new`, `/rpi:status`, `/rpi:add-todo`, `/rpi:onboarding`, `/rpi:set-profile`) do not use model resolution. `/rpi:onboarding` spawns agents but always inherits the parent model -- it is not a workflow phase.
+
+### Validation
+
+Valid model names: `opus`, `sonnet`, `haiku`.
+
+If a `models.{phase}` value or a `profile` value in `.rpi.yaml` is invalid:
+- Log a warning: `Warning: Invalid model "{value}" for {phase} phase. Falling back to parent model.`
+- Omit the `model` parameter (inherit parent model).
+- Do NOT stop execution.
+
+If `profile` is set to an unrecognized name:
+- Log a warning: `Warning: Unknown profile "{value}". Valid profiles: quality-first, balanced, speed-first, budget. Falling back to parent model.`
+- Treat all phases as "inherit parent".
+
+### Status Messages
+
+When a model is resolved (not inherited), the command outputs once before spawning agents:
+```
+Profile: {profile} | {phase} phase -> {model}
+```
+
+When inheriting the parent model (no profile, no override), output nothing extra -- this preserves current behavior silently.
 
 ## Feature Folder Structure
 
