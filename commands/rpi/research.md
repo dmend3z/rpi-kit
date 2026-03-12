@@ -20,11 +20,15 @@ Run parallel research agents on a feature's REQUEST.md, synthesize findings into
 
 ## 1. Load config and parse arguments
 
-Read `.rpi.yaml` for folder path and default tier.
+Read `.rpi.yaml` for folder path and default tier. Also read `profile` and `models` keys.
 Parse `$ARGUMENTS`:
 - First argument: `{feature-slug}` (required)
 - Flags: `--quick`, `--standard`, `--deep` (override config tier)
 - Flag: `--force` (proceed even if previous research exists)
+
+## 1b. Resolve model
+
+Resolve the model for the `research` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message before agent spawns.
 
 ## 2. Resolve feature path
 
@@ -71,7 +75,7 @@ If `{path}/research/RESEARCH.md` already exists and `--force` not set, ask user:
 
 ## 4. Launch research agents in parallel
 
-Use the Agent tool to launch ALL selected agents concurrently in a single message.
+Use the Agent tool to launch ALL selected agents concurrently in a single message. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in each Agent tool call.
 
 Each agent receives this prompt:
 ```
@@ -113,7 +117,7 @@ This is a CHANGE to an existing feature. Focus on:
 
 ## 5. Synthesize into RESEARCH.md
 
-After all agents complete, use the Agent tool to launch the doc-synthesizer agent.
+After all agents complete, use the Agent tool to launch the doc-synthesizer agent. If a model was resolved, include `model: "{resolved_model}"` in the Agent tool call.
 
 Prompt:
 ```

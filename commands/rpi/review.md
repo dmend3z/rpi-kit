@@ -19,7 +19,7 @@ Review the implementation against the plan. Check completeness, correctness, and
 
 ## 1. Load config and resolve feature path
 
-Read `.rpi.yaml` for folder path.
+Read `.rpi.yaml` for folder path. Also read `profile` and `models` keys.
 
 Parse `{feature-slug}` from arguments.
 
@@ -51,7 +51,13 @@ Read all plan and implementation files:
 - ux.md (if exists — UX requirements)
 - IMPLEMENT.md (implementation record)
 
+## 2b. Resolve model
+
+Resolve the model for the `review` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message before agent spawns.
+
 ## 3. Launch code-reviewer agent
+
+If a model was resolved in Step 2b, include `model: "{resolved_model}"` in the Agent tool call.
 
 ```
 You are the code-reviewer agent for the RPI workflow.

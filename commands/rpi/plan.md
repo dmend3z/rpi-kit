@@ -20,12 +20,16 @@ Generate implementation plan artifacts from the research output. Adapts which ar
 
 ## 1. Load config and parse arguments
 
-Read `.rpi.yaml` for configuration.
+Read `.rpi.yaml` for configuration. Also read `profile` and `models` keys.
 Parse `$ARGUMENTS`:
 - First argument: `{feature-slug}` (required)
 - `--force`: proceed even if research verdict was NO-GO
 - `--skip-pm`: don't generate pm.md
 - `--skip-ux`: don't generate ux.md
+
+## 1b. Resolve model
+
+Resolve the model for the `plan` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message before agent spawns.
 
 ## 2. Resolve feature path and validate prerequisites
 
@@ -101,7 +105,7 @@ After the interview, create a brief alignment summary that will be included in a
 
 ## 4. Generate eng.md (always)
 
-Launch senior-engineer agent:
+Launch senior-engineer agent. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in the Agent tool call.
 ```
 You are planning the technical implementation for a feature.
 
@@ -140,7 +144,7 @@ This is a CHANGE to an existing feature. Focus on:
 
 ## 5. Generate pm.md (if not skipped)
 
-Launch product-manager agent:
+Launch product-manager agent. If a model was resolved, include `model: "{resolved_model}"` in the Agent tool call.
 ```
 You are creating product requirements for a feature.
 
@@ -163,7 +167,7 @@ Follow product-manager rules from RPI agent guidelines.
 
 ## 6. Generate ux.md (if not skipped)
 
-Launch ux-designer agent:
+Launch ux-designer agent. If a model was resolved, include `model: "{resolved_model}"` in the Agent tool call.
 ```
 You are designing the user experience for a feature.
 
@@ -186,7 +190,7 @@ Follow ux-designer rules from RPI agent guidelines.
 
 ## 7. Generate PLAN.md
 
-After all agents complete (eng.md is required, pm.md and ux.md may be parallel), launch senior-engineer agent again to create the task breakdown:
+After all agents complete (eng.md is required, pm.md and ux.md may be parallel), launch senior-engineer agent again to create the task breakdown. If a model was resolved, include `model: "{resolved_model}"` in the Agent tool call.
 
 ```
 You are creating an implementation plan from the technical spec.

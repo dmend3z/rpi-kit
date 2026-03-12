@@ -21,12 +21,16 @@ Generate documentation for a completed feature using all RPI artifacts as source
 
 ## 1. Load config and parse arguments
 
-Read `.rpi.yaml` for folder path.
+Read `.rpi.yaml` for folder path. Also read `profile` and `models` keys.
 Parse `$ARGUMENTS`:
 - First argument: `{feature-slug}` (required)
 - `--skip-inline`: skip adding inline code documentation
 - `--skip-readme`: skip README updates
 - `--skip-changelog`: skip changelog entry
+
+## 1b. Resolve model
+
+Resolve the model for the `review` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message before agent spawns.
 
 ## 2. Validate prerequisites
 
@@ -66,7 +70,7 @@ Use Glob and Grep to read the actual implemented files and identify what needs d
 
 ## 5. Launch parallel documentation agents
 
-Use the Agent tool to launch applicable agents concurrently.
+Use the Agent tool to launch applicable agents concurrently. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in each Agent tool call.
 
 ### Agent 1: Inline Documentation (unless --skip-inline)
 

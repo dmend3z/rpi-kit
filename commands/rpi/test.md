@@ -21,13 +21,17 @@ Execute strict TDD cycles (RED → GREEN → REFACTOR) for tasks in a feature's 
 
 ## 1. Load config and parse arguments
 
-Read `.rpi.yaml` for configuration (folder, test_runner).
+Read `.rpi.yaml` for configuration (folder, test_runner). Also read `profile` and `models` keys.
 Parse `$ARGUMENTS`:
 - First argument: `{feature-slug}` (required)
 - `--task <id>`: run TDD for a specific task (e.g., `1.2`)
 - `--all`: run TDD for all uncompleted tasks sequentially
 
 If no `--task` or `--all`, ask the user which task to work on.
+
+## 1b. Resolve model
+
+Resolve the model for the `implement` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message before agent spawns.
 
 ## 2. Validate prerequisites
 
@@ -53,7 +57,7 @@ If no test infrastructure found, ask the user:
 
 ### Phase RED: Write failing test
 
-Launch test-engineer agent:
+Launch test-engineer agent. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in the Agent tool call.
 ```
 You are the test-engineer agent for the RPI workflow.
 
@@ -103,7 +107,7 @@ RED: Test fails correctly.
 
 ### Phase GREEN: Minimal implementation
 
-Launch plan-executor agent:
+Launch plan-executor agent. If a model was resolved, include `model: "{resolved_model}"` in the Agent tool call.
 ```
 You are implementing a single task using TDD.
 

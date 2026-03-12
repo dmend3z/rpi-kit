@@ -21,7 +21,7 @@ Execute tasks from PLAN.md with per-task commits, automatic code simplification,
 
 ## 1. Load config and parse arguments
 
-Read `.rpi.yaml` for configuration.
+Read `.rpi.yaml` for configuration. Also read `profile` and `models` keys.
 Parse `$ARGUMENTS`:
 - First argument: `{feature-slug}` (required)
 - `--sequential`: force single agent mode
@@ -30,6 +30,10 @@ Parse `$ARGUMENTS`:
 - `--skip-review`: skip the review step (overrides config)
 - `--resume`: resume from last completed task in existing IMPLEMENT.md
 - `--from-task {id}`: resume from a specific task ID (used with --resume)
+
+## 1b. Resolve model
+
+Resolve the model for the `implement` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message once before task execution begins.
 
 ## 2. Resolve feature path and validate prerequisites
 
@@ -159,7 +163,7 @@ Initialize session task counter: `tasks_this_session = 0`
 
 ### 6a. Agent prompt template (all tiers)
 
-For each task, construct the agent prompt:
+For each task, construct the agent prompt. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in every Agent tool call (plan-executor and test-engineer).
 
 ```
 You are the plan-executor agent for the RPI workflow.

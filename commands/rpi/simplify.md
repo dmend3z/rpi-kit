@@ -20,7 +20,7 @@ Run 3 parallel code review sub-agents (reuse, quality, efficiency) on the implem
 
 ## 1. Load config, resolve path, and identify changes
 
-Read `.rpi.yaml` for folder path.
+Read `.rpi.yaml` for folder path. Also read `profile` and `models` keys.
 
 Parse `{feature-slug}` from arguments.
 
@@ -39,9 +39,13 @@ git diff HEAD~{number_of_commits}
 
 If no git history, use the files listed in IMPLEMENT.md tasks and read them directly.
 
+## 1b. Resolve model
+
+Resolve the model for the `implement` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message before agent spawns.
+
 ## 2. Launch 3 parallel sub-agents
 
-Use the Agent tool to launch all 3 concurrently in a single message.
+Use the Agent tool to launch all 3 concurrently in a single message. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in each Agent tool call.
 
 ### Agent 1: Reuse Checker
 
