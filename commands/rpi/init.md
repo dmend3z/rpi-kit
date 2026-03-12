@@ -29,7 +29,6 @@ Use AskUserQuestion to gather preferences. Ask up to 4 questions at a time:
 - "What's your default research tier?" — Options: `standard` (Recommended), `quick`, `deep`
 
 **Batch 2:**
-- "Should code simplification run automatically before review?" — Options: Yes (Recommended), No
 - "What commit message style do you prefer?" — Options: `conventional` (Recommended, e.g., feat(1.1): task name), `descriptive` (plain English)
 
 **Batch 3:**
@@ -61,11 +60,9 @@ Write the config file at the project root:
 
 folder: {user_choice}
 tier: {user_choice}
-auto_simplify: {true|false}
 commit_style: {conventional|descriptive}
 parallel_threshold: {number}
 skip_artifacts: []
-review_after_implement: true
 isolation: {none|branch|worktree}
 tdd: {true|false}
 test_runner: {auto|command}

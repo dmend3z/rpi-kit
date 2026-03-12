@@ -12,6 +12,9 @@
 
 ### Changed
 
+- **Separate sessions for simplify and review** — `/rpi:implement` no longer runs simplify/review inline; outputs next-step instructions to run each in a fresh session for better accuracy
+- Removed `auto_simplify` and `review_after_implement` config keys (no longer needed)
+- Removed `--skip-simplify` and `--skip-review` flags from `/rpi:implement`
 - 7 commands (`/rpi:research`, `/rpi:plan`, `/rpi:implement`, `/rpi:test`, `/rpi:simplify`, `/rpi:review`, `/rpi:docs`) now resolve model via the Model Resolution Algorithm and pass `model` parameter to Agent tool invocations
 - `skills/rpi-workflow/SKILL.md` extended with Model Resolution Algorithm section and config schema for `profile`/`models` keys
 

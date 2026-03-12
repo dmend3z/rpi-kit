@@ -126,6 +126,6 @@ Simplify complete for {feature-slug}:
 {Or: "Code was already clean — no issues found."}
 ```
 
-If called from /rpi:implement, return findings for recording in IMPLEMENT.md.
+After finishing, update IMPLEMENT.md `## Simplify Findings` section with the results.
 
 </process>

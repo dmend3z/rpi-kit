@@ -189,11 +189,9 @@ Run `/rpi:init` or create `.rpi.yaml` manually:
 ```yaml
 folder: rpi                    # Feature folder location
 tier: standard                 # Default research tier
-auto_simplify: true            # Run simplify before review
 commit_style: conventional     # Commit message format
 parallel_threshold: 8          # Task count for parallel mode
 skip_artifacts: []             # Artifacts to never generate
-review_after_implement: true   # Mandatory review gate
 isolation: none                # none | branch | worktree
 tdd: false                     # Enable Test-Driven Development
 test_runner: auto              # Test command (auto-detect or explicit)

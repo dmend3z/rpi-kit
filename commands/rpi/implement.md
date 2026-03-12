@@ -1,7 +1,7 @@
 ---
 name: rpi:implement
-description: Execute the implementation plan with task-level tracking, smart parallelism, automatic simplification, and mandatory code review.
-argument-hint: "<feature-slug> [--sequential|--parallel] [--skip-simplify] [--skip-review] [--resume] [--from-task <id>]"
+description: Execute the implementation plan with task-level tracking and smart parallelism.
+argument-hint: "<feature-slug> [--sequential|--parallel] [--resume] [--from-task <id>]"
 allowed-tools:
   - Read
   - Write
@@ -14,7 +14,7 @@ allowed-tools:
 ---
 
 <objective>
-Execute tasks from PLAN.md with per-task commits, automatic code simplification, and mandatory code review. Track everything in IMPLEMENT.md.
+Execute tasks from PLAN.md with per-task commits. Track everything in IMPLEMENT.md. Simplification and review run in separate sessions for fresh context.
 </objective>
 
 <process>
@@ -26,8 +26,6 @@ Parse `$ARGUMENTS`:
 - First argument: `{feature-slug}` (required)
 - `--sequential`: force single agent mode
 - `--parallel`: force parallel wave mode
-- `--skip-simplify`: skip the simplify step (overrides config)
-- `--skip-review`: skip the review step (overrides config)
 - `--resume`: resume from last completed task in existing IMPLEMENT.md
 - `--from-task {id}`: resume from a specific task ID (used with --resume)
 
@@ -404,21 +402,7 @@ After all tasks in a PLAN.md phase complete:
    ```
 4. If any tasks blocked, ask user how to proceed before next phase
 
-## 8. Run simplify (unless --skip-simplify)
-
-If `auto_simplify` is true in config (and no `--skip-simplify`):
-
-Run the simplify process as defined in `/rpi:simplify {feature-slug}`.
-Record findings in IMPLEMENT.md under "## Simplify Findings".
-
-## 9. Run review (unless --skip-review)
-
-If `review_after_implement` is true in config (and no `--skip-review`):
-
-Run the review process as defined in `/rpi:review {feature-slug}`.
-Record verdict in IMPLEMENT.md under "## Review".
-
-## 10. Finalize IMPLEMENT.md
+## 8. Finalize IMPLEMENT.md
 
 Rebuild IMPLEMENT.md from all checkpoint files:
 1. Read all files in `checkpoints/`
@@ -434,42 +418,29 @@ Sessions: {count from sessions/ directory}
 Commits: {list with hashes from checkpoints}
 Deviations: {count by severity}
 
-## Review Verdict: {PASS|FAIL}
-{details}
+## Simplify Findings
+
+_Run in a separate session: /rpi:simplify {feature-slug}_
+
+## Review
+
+_Run in a separate session: /rpi:review {feature-slug}_
 ```
 
-## 11. Present result
+## 9. Present result
 
-If PASS:
 ```
-Feature {feature-slug} implemented.
+Implementation complete: {feature-slug}
 {N} tasks completed across {M} phases.
-Review: PASS
 
 All artifacts: {folder}/{feature-slug}/
+
+Next steps (run each in a new session for fresh context):
+1. /rpi:simplify {feature-slug}
+2. /rpi:review {feature-slug}
 ```
 
-If FAIL:
-```
-Feature {feature-slug} implementation complete but review found issues:
-{list issues}
-
-Fix and re-run: /rpi:review {feature-slug}
-```
-
-## 11b. Cross-phase session boundary (Tier 3 only)
-
-If tier == 3, after presenting the final result, add:
-
-```
-This was a large feature (Tier 3). For future features of this complexity,
-consider running each RPI phase in a separate session:
-1. Session 1: /rpi:new + /rpi:research
-2. Session 2: /rpi:plan
-3. Session 3+: /rpi:implement --resume (one session per wave)
-```
-
-## 12. Handle isolation cleanup
+## 10. Handle isolation cleanup
 
 Read `isolation` from `.rpi.yaml`.
 
