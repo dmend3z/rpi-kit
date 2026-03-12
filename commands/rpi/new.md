@@ -29,7 +29,34 @@ If no argument, ask: "What feature do you want to build?" and derive the slug fr
 
 ## 3. Check for existing feature
 
-Check if `{folder}/{feature-slug}/` already exists. If yes, warn the user and ask if they want to continue (overwrite REQUEST.md) or pick a different name.
+Check if `{folder}/{feature-slug}/` already exists.
+
+If it does NOT exist, continue to step 4 (new feature interview).
+
+If it DOES exist, ask the user with AskUserQuestion:
+
+"Feature '{feature-slug}' already exists ({folder}/{feature-slug}/). What do you want to do?"
+
+Options:
+- "Create a change for this feature" — go to step 3b
+- "Overwrite existing REQUEST.md" — continue to step 4 (current behavior)
+- "Pick a different name" — go back to step 2
+
+## 3b. Set up change
+
+Ask: "What change do you want to make to {feature-slug}?" and derive change-slug (kebab-case) from the answer.
+
+Check if `{folder}/{feature-slug}/changes/{change-slug}/` already exists. If yes, warn and ask to overwrite or pick a different name.
+
+Read parent feature context for the interview:
+- `{folder}/{feature-slug}/REQUEST.md`
+- `{folder}/{feature-slug}/research/RESEARCH.md` (if exists)
+- `{folder}/{feature-slug}/plan/PLAN.md` (if exists)
+- `{folder}/{feature-slug}/implement/IMPLEMENT.md` (if exists)
+
+Store the parent artifacts content as `parent_context` for use in steps 4 and 6.
+
+Set `is_change = true` and `parent_slug = {feature-slug}`.
 
 ## 4. Adaptive interview
 
