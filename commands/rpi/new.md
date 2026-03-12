@@ -171,6 +171,45 @@ Write `{folder}/{feature-slug}/REQUEST.md` with this structure:
 {S | M | L | XL} — {brief justification}
 ```
 
+### Change mode directory creation (if `is_change == true`)
+
+Skip isolation setup (changes use the parent feature's branch/worktree context).
+
+Create the change directory structure:
+```bash
+mkdir -p {folder}/{parent_slug}/changes/{change-slug}/research
+mkdir -p {folder}/{parent_slug}/changes/{change-slug}/plan
+mkdir -p {folder}/{parent_slug}/changes/{change-slug}/implement
+```
+
+Write `{folder}/{parent_slug}/changes/{change-slug}/REQUEST.md` with this structure:
+
+```markdown
+# {Change Title}
+
+## Parent Feature
+[{Parent Feature Title}]({relative-path-to-parent-REQUEST.md})
+{1-2 sentence summary of parent feature from parent_context}
+
+## Summary of Change
+{What changes in the existing feature}
+
+## Motivation
+{Why this change is needed}
+
+## Affected Areas
+- {Components/files of parent feature that are affected}
+
+## Breaking Changes
+- {List or "None"}
+
+## Constraints
+- {Technical/business constraints}
+
+## Complexity Estimate
+{S | M | L | XL} — {brief justification}
+```
+
 ## 7. Next step
 
 Output:
@@ -182,6 +221,16 @@ Options:
   --quick     Feasibility check only (fast)
   --standard  Scope + technical approach (default)
   --deep      Full analysis with strategic review
+```
+
+### Change mode output (if `is_change == true`)
+
+Output:
+```
+Change created: {folder}/{parent_slug}/changes/{change-slug}/REQUEST.md
+Parent: {folder}/{parent_slug}/
+
+Next: /rpi:research {change-slug}
 ```
 
 </process>
