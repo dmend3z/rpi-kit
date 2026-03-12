@@ -18,16 +18,29 @@ Display detailed status cards for all features (or a specific feature) in the RP
 
 Read `.rpi.yaml` for folder path. Default to `rpi/` if not found.
 
-## 2. Discover features
+## 2. Discover features and changes
 
-Use Glob to find all `REQUEST.md` files:
+Use Glob to find all top-level `REQUEST.md` files:
 ```
 {folder}/*/REQUEST.md
 ```
 
 Each parent directory is a feature slug.
 
-If `$ARGUMENTS` specifies a feature slug, filter to that feature only.
+Also find all change `REQUEST.md` files:
+```
+{folder}/*/changes/*/REQUEST.md
+```
+
+Parse each match to extract parent_slug and change_slug.
+
+If `$ARGUMENTS` specifies a slug:
+1. Check if it matches a top-level feature → show that feature and its changes
+2. If not, check if it matches a change slug → show just that change (with parent context)
+3. Resolution follows the shared Resolve Feature Path logic:
+   - Check `{folder}/{slug}/` exists → type = "feature"
+   - Glob `{folder}/*/changes/{slug}/` → type = "change"
+   - Multiple matches → AskUserQuestion
 
 If no features found:
 ```
@@ -43,6 +56,9 @@ For each feature slug, check which files exist:
 - `research/RESEARCH.md` exists, no `plan/PLAN.md` → Phase: **researched**
 - `plan/PLAN.md` exists, no `implement/IMPLEMENT.md` → Phase: **planned**
 - `implement/IMPLEMENT.md` exists → Phase: **implementing** or **complete**
+
+For each change, determine phase using the same logic as features,
+but looking in `{folder}/{parent_slug}/changes/{change_slug}/` instead.
 
 ## 4. Gather details per feature
 
@@ -96,6 +112,8 @@ Complexity: M
 Tier: 2 (context weight: 14.5)
 Sessions: 2
 Current: Task 2.1 — Login component
+  └─ add-social-login  [research: GO]
+  └─ fix-token-refresh  [new]
 
 ## payment-system
 Phase: research
@@ -111,6 +129,9 @@ Complexity: S
 Phase: new
 Verdict: —
 ```
+
+Changes are displayed indented under their parent feature with `└─` prefix.
+Each change shows its own phase status using the same rules as features.
 
 ## 6. Suggest next action
 
