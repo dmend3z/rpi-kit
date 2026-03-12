@@ -19,6 +19,7 @@ const EXPECTED_COMMANDS = [
   "docs",
   "status",
   "onboarding",
+  "set-profile",
 ];
 
 const EXPECTED_AGENTS = [

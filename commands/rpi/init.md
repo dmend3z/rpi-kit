@@ -41,6 +41,16 @@ Use AskUserQuestion to gather preferences. Ask up to 4 questions at a time:
 - "Enable Test-Driven Development during implementation?" — Options: No (default), Yes
 - If yes: "What command runs your tests?" — Options: auto-detect (Recommended), `npm test`, `npx vitest`, `pytest`, custom
 
+**Batch 5 (Model Profiles):**
+- "Which model profile do you want for agent execution?" — Options:
+  - `balanced` (Recommended — opus for research/plan/review, sonnet for implement)
+  - `quality-first` (opus everywhere — maximum quality)
+  - `speed-first` (sonnet everywhere — maximum speed)
+  - `budget` (haiku + sonnet mix — cost optimized, may reduce research quality)
+  - "No profile" (default — all agents inherit parent model)
+
+If reconfiguring and a profile already exists, show: "Current profile: {profile}. Change model profile?" with the same options plus "Keep current ({profile})".
+
 ## 3. Create .rpi.yaml
 
 Write the config file at the project root:
@@ -61,6 +71,7 @@ tdd: {true|false}
 test_runner: {auto|command}
 session_isolation: {auto|aggressive|off}
 max_tasks_per_session: 5      # tasks before session warning (Tier 2) or forced checkpoint (Tier 3)
+profile: {balanced|quality-first|speed-first|budget}  # omit if "No profile" selected
 ```
 
 ## 4. Create feature folder
@@ -78,6 +89,7 @@ RPI initialized.
 Config: .rpi.yaml
 Features: {folder}/
 Tier: {tier}
+Profile: {profile} (research: {model}, plan: {model}, implement: {model}, review: {model})
 
 Next: /rpi:new to start your first feature.
 ```

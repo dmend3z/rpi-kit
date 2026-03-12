@@ -16,7 +16,7 @@ Display detailed status cards for all features (or a specific feature) in the RP
 
 ## 1. Load config
 
-Read `.rpi.yaml` for folder path. Default to `rpi/` if not found.
+Read `.rpi.yaml` for folder path. Default to `rpi/` if not found. Also read `profile` and `models` keys.
 
 ## 2. Discover features and changes
 
@@ -86,7 +86,12 @@ For each feature, read the relevant files to extract:
 
 ## 5. Display detailed cards
 
-Output a card per feature:
+First, display the active profile at the top of the output. Resolve the effective model for each phase using the Model Resolution Algorithm in the rpi-workflow skill:
+- With profile: `Profile: {profile} (research: {model}, plan: {model}, implement: {model}, review: {model})`
+- With overrides, mark overridden phases with `*`: `Profile: balanced (research: opus, plan: opus, implement: opus*, review: opus)`
+- No profile: `Profile: none (inheriting parent model)`
+
+Then output a card per feature:
 
 ```markdown
 ## {feature-slug}
@@ -104,6 +109,8 @@ Verdict: {GO|GO with concerns|NO-GO|—}
 
 ```markdown
 # RPI Status
+
+Profile: balanced (research: opus, plan: opus, implement: sonnet, review: opus)
 
 ## oauth2-auth
 Phase: implement (6/9 tasks)
