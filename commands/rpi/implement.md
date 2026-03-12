@@ -31,9 +31,25 @@ Parse `$ARGUMENTS`:
 - `--resume`: resume from last completed task in existing IMPLEMENT.md
 - `--from-task {id}`: resume from a specific task ID (used with --resume)
 
-## 2. Validate prerequisites
+## 2. Resolve feature path and validate prerequisites
 
-Read `{folder}/{feature-slug}/plan/PLAN.md`. If missing:
+Parse `{feature-slug}` from arguments.
+
+**Resolution order:**
+1. Check if `{folder}/{feature-slug}/` exists → type = "feature", path = `{folder}/{feature-slug}`
+2. If not, Glob `{folder}/*/changes/{feature-slug}/` → if found, type = "change", path = matched path, parent_path = parent directory
+3. If multiple matches → AskUserQuestion listing all matches with full paths
+4. If no match → error: `Feature not found: {feature-slug}. Run /rpi:new {feature-slug} first.`
+
+If `type == "change"`:
+- Set `parent_path` to the parent feature directory
+- Read parent artifacts for agent context:
+  - `{parent_path}/REQUEST.md`
+  - `{parent_path}/research/RESEARCH.md` (if exists)
+  - `{parent_path}/plan/PLAN.md` (if exists)
+  - `{parent_path}/plan/eng.md` (if exists)
+
+Read `{path}/plan/PLAN.md`. If missing:
 ```
 Plan not found. Run /rpi:plan {feature-slug} first.
 ```
@@ -161,6 +177,16 @@ Test: {test_spec from PLAN.md, if present}
 
 ## Technical Context
 {contents of eng.md}
+
+If `type == "change"`, add:
+
+## Parent Feature Context
+{contents of parent artifacts read in step 2}
+
+This is a CHANGE to an existing feature. When implementing:
+- Ensure compatibility with existing parent feature code
+- Flag breaking changes as scope deviations
+- Reference parent architecture decisions from eng.md
 
 ## Rules
 - Only touch files listed for this task
