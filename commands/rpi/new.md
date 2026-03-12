@@ -75,6 +75,22 @@ Start with core questions, then ask follow-ups based on answers.
 
 Use AskUserQuestion for structured questions. Keep it conversational — 2-3 questions per batch, max 3 batches. Stop when you have enough to write a clear REQUEST.md.
 
+### Change mode interview (if `is_change == true`)
+
+Replace the core questions with context-aware ones:
+
+**Core (always ask):**
+- "What do you want to change in {parent_slug}?" (skip if already answered in step 3b)
+- "Why is this change needed?"
+
+**Adaptive follow-ups (based on parent artifacts):**
+- If parent has IMPLEMENT.md: "Which parts of the existing implementation are affected?"
+- If parent has PLAN.md with architecture decisions: "Does this change any architecture decisions from the original plan?"
+- If change sounds like it could break things: "Will this break any existing behavior?"
+- Always offer: "Any constraints or references?"
+
+Use AskUserQuestion. Keep it lighter than new features — max 2 batches.
+
 ## 5. Set up isolation
 
 Read `isolation` from `.rpi.yaml` (default: `none`).
