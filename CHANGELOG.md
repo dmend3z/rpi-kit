@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Model Profiles** — 4 pre-defined profiles (`quality-first`, `balanced`, `speed-first`, `budget`) that control which AI model runs each workflow phase
+- **`/rpi:set-profile` command** — display current profile, switch between profiles, or remove profile interactively
+- **Per-phase model overrides** — customize individual phases in `.rpi.yaml` `models:` block (overrides take precedence over profile)
+- **Profile selection in `/rpi:init`** — Batch 5 asks about model profile during project initialization
+- **Active profile in `/rpi:status`** — status output now shows the active profile with phase-model mapping
+
+### Changed
+
+- 7 commands (`/rpi:research`, `/rpi:plan`, `/rpi:implement`, `/rpi:test`, `/rpi:simplify`, `/rpi:review`, `/rpi:docs`) now resolve model via the Model Resolution Algorithm and pass `model` parameter to Agent tool invocations
+- `skills/rpi-workflow/SKILL.md` extended with Model Resolution Algorithm section and config schema for `profile`/`models` keys
+
 ## 0.2.0
 
 ### Added

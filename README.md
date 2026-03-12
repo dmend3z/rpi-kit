@@ -73,6 +73,7 @@ Copy `AGENTS.md` and `codex.md` to your project root. The workflow rules and age
 | `/rpi:review` | Code review against plan requirements + test coverage |
 | `/rpi:docs` | Generate documentation from implementation artifacts |
 | `/rpi:add-todo` | Capture quick implementation ideas in `{folder}/todos/` |
+| `/rpi:set-profile` | Switch the active model profile for agent execution |
 
 ## Research Tiers
 
@@ -135,6 +136,33 @@ test_runner: auto  # or "npm test", "npx vitest", "pytest", etc.
 - **PLAN.md** includes a `Test:` field per task describing what behavior to verify
 - **Implementation** writes a failing test first, verifies failure, then implements minimal code
 - **Review** checks test coverage and verifies tests exercise real code through public interfaces
+
+## Model Profiles
+
+Control which AI model runs each workflow phase. Profiles optimize the cost/quality tradeoff by using stronger models where reasoning matters most and faster models for mechanical tasks.
+
+| Profile | research | plan | implement | review |
+|---------|----------|------|-----------|--------|
+| `quality-first` | opus | opus | opus | opus |
+| `balanced` | opus | opus | sonnet | opus |
+| `speed-first` | sonnet | sonnet | sonnet | sonnet |
+| `budget` | haiku | sonnet | haiku | sonnet |
+
+### Configure via command
+
+```bash
+/rpi:set-profile balanced
+```
+
+### Configure via `.rpi.yaml`
+
+```yaml
+profile: balanced              # quality-first | balanced | speed-first | budget
+models:                        # Per-phase overrides (optional)
+  implement: opus              # Override a single phase
+```
+
+Per-phase overrides in `models:` take precedence over the profile. No profile configured = all agents inherit the parent session's model (current default behavior).
 
 ## Feature Folder Structure
 
