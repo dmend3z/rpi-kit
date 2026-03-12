@@ -17,13 +17,26 @@ Review the implementation against the plan. Check completeness, correctness, and
 
 <process>
 
-## 1. Load config and validate
+## 1. Load config and resolve feature path
 
 Read `.rpi.yaml` for folder path.
-Validate that all required files exist:
-- `{folder}/{feature-slug}/plan/PLAN.md`
-- `{folder}/{feature-slug}/plan/eng.md`
-- `{folder}/{feature-slug}/implement/IMPLEMENT.md`
+
+Parse `{feature-slug}` from arguments.
+
+**Resolution order:**
+1. Check if `{folder}/{feature-slug}/` exists → type = "feature", path = `{folder}/{feature-slug}`
+2. If not, Glob `{folder}/*/changes/{feature-slug}/` → if found, type = "change", path = matched path, parent_path = parent directory
+3. If multiple matches → AskUserQuestion listing all matches with full paths
+4. If no match → error: `Feature not found: {feature-slug}`
+
+If `type == "change"`:
+- Set `parent_path` to the parent feature directory
+- Read parent artifacts for agent context
+
+Validate that required files exist:
+- `{path}/plan/PLAN.md`
+- `{path}/plan/eng.md`
+- `{path}/implement/IMPLEMENT.md`
 
 If any missing, error with guidance on which command to run.
 
@@ -53,6 +66,15 @@ Read these files for the complete feature context:
 - {folder}/{feature-slug}/implement/IMPLEMENT.md
 
 Then review the actual code changes. Use Grep and Glob to find the files listed in the plan and verify the implementation.
+
+If `type == "change"`, also read parent feature files for context:
+- {parent_path}/REQUEST.md
+- {parent_path}/research/RESEARCH.md (if exists)
+- {parent_path}/plan/eng.md (if exists)
+
+This is a CHANGE to an existing feature. Additionally check:
+- Compatibility with parent feature's existing implementation
+- Whether breaking changes listed in the change REQUEST.md are properly handled
 
 Your review must check:
 
