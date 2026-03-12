@@ -27,14 +27,30 @@ Parse `$ARGUMENTS`:
 - `--skip-pm`: don't generate pm.md
 - `--skip-ux`: don't generate ux.md
 
-## 2. Validate prerequisites
+## 2. Resolve feature path and validate prerequisites
 
-Read `{folder}/{feature-slug}/research/RESEARCH.md`. If missing:
+Parse `{feature-slug}` from arguments.
+
+**Resolution order:**
+1. Check if `{folder}/{feature-slug}/` exists → type = "feature", path = `{folder}/{feature-slug}`
+2. If not, Glob `{folder}/*/changes/{feature-slug}/` → if found, type = "change", path = matched path, parent_path = parent directory
+3. If multiple matches → AskUserQuestion listing all matches with full paths
+4. If no match → error: `Feature not found: {feature-slug}. Run /rpi:new {feature-slug} first.`
+
+If `type == "change"`:
+- Set `parent_path` to the parent feature directory
+- Read parent artifacts for agent context:
+  - `{parent_path}/REQUEST.md`
+  - `{parent_path}/research/RESEARCH.md` (if exists)
+  - `{parent_path}/plan/PLAN.md` (if exists)
+  - `{parent_path}/plan/eng.md` (if exists)
+
+Read `{path}/research/RESEARCH.md`. If missing:
 ```
 Research not found. Run /rpi:research {feature-slug} first.
 ```
 
-Check the verdict in RESEARCH.md. If NO-GO and no `--force` flag:
+Check verdict. If NO-GO and no `--force`:
 ```
 Research verdict is NO-GO. Review alternatives in RESEARCH.md.
 To proceed anyway: /rpi:plan {feature-slug} --force
@@ -107,6 +123,20 @@ Produce eng.md — a technical specification covering:
 Be concrete. Cite existing codebase files and patterns from the research.
 Follow senior-engineer rules from RPI agent guidelines.
 ```
+
+If `type == "change"`, append to the agent prompt:
+
+```
+## Parent Feature Context
+{contents of parent artifacts read in step 2}
+
+This is a CHANGE to an existing feature. Focus on:
+- What's different from the parent implementation
+- Compatibility with existing code
+- Breaking changes to watch for
+```
+
+> **Note:** Also append this same parent context block to the pm.md (step 5), ux.md (step 6), and PLAN.md (step 7) agent prompts when `type == "change"`.
 
 ## 5. Generate pm.md (if not skipped)
 
