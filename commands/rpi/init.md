@@ -84,12 +84,25 @@ mkdir -p {folder}
 ## 5. Confirm
 
 Output a brief confirmation:
+
+With profile:
 ```
 RPI initialized.
 Config: .rpi.yaml
 Features: {folder}/
 Tier: {tier}
 Profile: {profile} (research: {model}, plan: {model}, implement: {model}, review: {model})
+
+Next: /rpi:new to start your first feature.
+```
+
+Without profile:
+```
+RPI initialized.
+Config: .rpi.yaml
+Features: {folder}/
+Tier: {tier}
+Profile: none (agents inherit parent model)
 
 Next: /rpi:new to start your first feature.
 ```
