@@ -25,6 +25,11 @@ function hasCodex() {
   return result.status === 0;
 }
 
+function hasGeminiCLI() {
+  const result = spawnSync("gemini", ["--version"], { stdio: "pipe" });
+  return result.status === 0;
+}
+
 function installClaude() {
   log("Installing RPIKit for Claude Code...");
   try {
@@ -62,6 +67,12 @@ function installCodex() {
   return true;
 }
 
+function installGeminiCLI() {
+  log("Installing RPIKit for Gemini CLI...");
+  log("Gemini CLI: coming soon. Please see documentation for manual setup.");
+  return true;
+}
+
 function uninstallClaude() {
   log("Removing RPIKit from Claude Code...");
   try {
@@ -81,14 +92,15 @@ function printHelp() {
 RPIKit — Research → Plan → Implement
 
 Usage:
-  rpi-kit install            Install for detected tools (Claude Code + Codex)
+  rpi-kit install            Interactive setup for AI tools
   rpi-kit install --claude   Install for Claude Code only
   rpi-kit install --codex    Install for Codex only (copies AGENTS.md to cwd)
+  rpi-kit install --gemini   Install for Gemini CLI only
   rpi-kit uninstall          Remove from Claude Code
   rpi-kit onboarding         Interactive walkthrough of the workflow
   rpi-kit help               Show this help
 
-After install, use in Claude Code:
+After install, use in Claude Code or Gemini CLI:
   /rpi:init                  Configure for your project
   /rpi:new <feature>         Start a new feature
   /rpi:research <feature>    Research feasibility
@@ -99,61 +111,139 @@ After install, use in Claude Code:
 `);
 }
 
-switch (command) {
-  case "install": {
-    const claudeOnly = flags.includes("--claude");
-    const codexOnly = flags.includes("--codex");
+async function run() {
+  switch (command) {
+    case "install": {
+      const claudeOnly = flags.includes("--claude");
+      const codexOnly = flags.includes("--codex");
+      const geminiOnly = flags.includes("--gemini");
 
-    if (claudeOnly) {
-      installClaude();
-    } else if (codexOnly) {
-      installCodex();
-    } else {
+      if (claudeOnly) {
+        installClaude();
+        break;
+      }
+      if (codexOnly) {
+        installCodex();
+        break;
+      }
+      if (geminiOnly) {
+        installGeminiCLI();
+        break;
+      }
+
+      // If silent, use the original auto-install behavior
+      if (silent) {
+        let installed = false;
+        if (hasClaude()) installed = installClaude() || installed;
+        if (hasCodex()) installed = installCodex() || installed;
+        if (hasGeminiCLI()) installed = installGeminiCLI() || installed;
+        if (!installed) {
+          const result = installClaude();
+          if (!result) {
+            log("\nNo supported tool detected (claude, codex, gemini).");
+            log("Run manually after installing Claude Code, Codex, or Gemini CLI:");
+            log("  rpi-kit install --claude");
+            log("  rpi-kit install --codex");
+            log("  rpi-kit install --gemini");
+          }
+        }
+        break;
+      }
+
+      // Interactive prompt
+      let p;
+      let color;
+      try {
+        p = await import("@clack/prompts");
+        color = (await import("picocolors")).default;
+      } catch (e) {
+        console.error("Failed to load interactive prompt dependencies. Falling back to default install.");
+        let installed = false;
+        if (hasClaude()) installed = installClaude() || installed;
+        if (hasCodex()) installed = installCodex() || installed;
+        if (!installed) installClaude();
+        break;
+      }
+
+      console.clear();
+      p.intro(color.bgCyan(color.black(" RPIKit Setup ")));
+
+      p.log.message(color.dim("RPIKit configured: Claude Code, Codex, Gemini CLI"));
+
+      const options = [
+        { value: "claude", label: "Claude Code", hint: hasClaude() ? "detected" : "" },
+        { value: "codex", label: "Codex", hint: hasCodex() ? "detected" : "" },
+        { value: "gemini", label: "Gemini CLI", hint: hasGeminiCLI() ? "detected" : "" }
+      ];
+
+      const initialValues = options.filter(o => o.hint === "detected").map(o => o.value);
+      if (initialValues.length === 0) {
+        initialValues.push("claude"); // default selection if none detected
+      }
+
+      const selectedTools = await p.multiselect({
+        message: `Select tools to set up (${options.length} available)`,
+        options: options,
+        initialValues,
+        required: false
+      });
+
+      if (p.isCancel(selectedTools)) {
+        p.cancel("Setup cancelled.");
+        process.exit(0);
+      }
+
+      if (selectedTools.length === 0) {
+        p.outro("No tools selected.");
+        break;
+      }
+
+      console.log(); // Spacing
+      
       let installed = false;
-
-      if (hasClaude()) {
-        installed = installClaude() || installed;
-      }
-
-      if (hasCodex()) {
-        installed = installCodex() || installed;
-      }
-
-      if (!installed && !silent) {
-        const result = installClaude();
-        if (!result) {
-          log("\nNo supported tool detected (claude, codex).");
-          log("Run manually after installing Claude Code or Codex:");
-          log("  rpi-kit install --claude");
-          log("  rpi-kit install --codex");
+      for (const tool of selectedTools) {
+        if (tool === "claude") {
+          installed = installClaude() || installed;
+        } else if (tool === "codex") {
+          installed = installCodex() || installed;
+        } else if (tool === "gemini") {
+          installed = installGeminiCLI() || installed;
         }
       }
 
-      if (installed && !silent) {
-        log("");
-        log("New to RPIKit? Run: rpi-kit onboarding");
+      if (installed) {
+        console.log();
+        p.outro(color.green("Setup complete! New to RPIKit? Run: rpi-kit onboarding"));
+      } else {
+        p.outro(color.yellow("Setup finished with some issues."));
       }
+      
+      break;
     }
-    break;
+
+    case "onboarding": {
+      const { run } = require("./onboarding");
+      run();
+      break;
+    }
+
+    case "uninstall":
+      uninstallClaude();
+      break;
+
+    case "help":
+    case "--help":
+    case "-h":
+      printHelp();
+      break;
+
+    default:
+      if (!silent) printHelp();
+      break;
   }
-
-  case "onboarding": {
-    const { run } = require("./onboarding");
-    run();
-    break;
-  }
-
-  case "uninstall":
-    uninstallClaude();
-    break;
-
-  case "help":
-  case "--help":
-  case "-h":
-    printHelp();
-    break;
-
-  default:
-    if (!silent) printHelp();
-    break;
 }
+
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

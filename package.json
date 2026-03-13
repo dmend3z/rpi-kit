@@ -1,6 +1,6 @@
 {
   "name": "rpi-kit",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Research → Plan → Implement. A systematic feature development workflow for Claude Code.",
   "license": "MIT",
   "author": "Daniel Mendes",
@@ -35,5 +35,9 @@
   "scripts": {
     "test": "node --test test/cli.test.js test/commands.test.js",
     "postinstall": "node bin/cli.js install --silent"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.1.0",
+    "picocolors": "^1.1.1"
   }
 }
