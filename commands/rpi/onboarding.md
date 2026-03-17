@@ -72,21 +72,30 @@ Check if `.rpi.yaml` exists.
 Write `.rpi.yaml` to the project root with the user's responses (use defaults for unanswered questions):
 
 ```yaml
-# RPI Workflow Configuration
-# Docs: https://github.com/mndz/rpi-kit
+version: 2
 
+# Directories
 folder: rpi/features
-tier: deep
-tdd: {user_response | false}
-auto_simplify: true
-commit_style: {user_response | conventional}
+specs_dir: rpi/specs
+solutions_dir: rpi/solutions
+context_file: rpi/context.md
+
+# Execution
 parallel_threshold: 8
-skip_artifacts: []
-review_after_implement: true
-branch_per_feature: false
+commit_style: {user_response | conventional}
+tdd: {user_response | false}
+
+# Agents
 ux_agent: {user_response | auto}
-auto_learn: {user_response | false}
-party_panel_size: {user_response | 5}
+
+# Quick flow
+quick_complexity: S
+
+# Knowledge compounding
+auto_learn: {user_response | true}
+
+# Party mode
+party_default_agents: {user_response | 5}
 ```
 
 ### Step 3d: Create directory structure

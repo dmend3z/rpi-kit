@@ -193,7 +193,7 @@ describe("RPIKit v2 — Agents", () => {
     }
   });
 
-  it("all agents have valid frontmatter with persona", () => {
+  it("all agents have valid frontmatter, persona, role, and output_format", () => {
     for (const agent of EXPECTED_AGENTS) {
       const filePath = path.join(AGENTS_DIR, `${agent}.md`);
       if (!fs.existsSync(filePath)) {
@@ -205,22 +205,8 @@ describe("RPIKit v2 — Agents", () => {
       assert.match(content, /description:/, `${agent}.md must have description`);
       assert.match(content, /tools:/, `${agent}.md must have tools`);
       assert.match(content, /<persona>/i, `${agent}.md must have persona section`);
-    }
-  });
-
-  it("all agents have role and output_format sections", () => {
-    for (const agent of EXPECTED_AGENTS) {
-      const filePath = path.join(AGENTS_DIR, `${agent}.md`);
-      if (!fs.existsSync(filePath)) {
-        assert.fail(`${agent}.md does not exist`);
-      }
-      const content = fs.readFileSync(filePath, "utf8");
       assert.match(content, /<role>/i, `${agent}.md must have role section`);
-      assert.match(
-        content,
-        /<output_format>/i,
-        `${agent}.md must have output_format section`
-      );
+      assert.match(content, /<output_format>/i, `${agent}.md must have output_format section`);
     }
   });
 });

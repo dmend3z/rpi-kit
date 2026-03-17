@@ -18,8 +18,8 @@ It guides you through ${CYAN}7 phases${RESET} with validation gates, delta specs
 knowledge compounding — so you research before you plan, and plan before you code.
 
 ${DIM}13 named agents simulate a product team:
-Luna (PM), Atlas (Architect), Scout (Researcher), Forge (Builder),
-Hawk (Reviewer), Shield (QA), Quill (Doc Writer), and more.${RESET}`,
+Luna (Analyst), Atlas (Explorer), Scout (Researcher), Forge (Builder),
+Hawk (Reviewer), Shield (Security), Quill (Doc Writer), and more.${RESET}`,
   },
   {
     title: "The 7-Phase Pipeline",

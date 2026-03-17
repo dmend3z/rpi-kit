@@ -114,16 +114,16 @@ Commands (14):
 
   /rpi:init                  Configure RPIKit for your project
   /rpi:status                Show all features and their phases
-  /rpi:rpi                   Quick project status overview
+  /rpi <feature>             Auto-progress to next phase
   /rpi:onboarding            Guided first-time setup
-  /rpi:learn <feature>       Extract lessons for knowledge compounding
+  /rpi:learn [description]   Capture a solution to knowledge base
   /rpi:archive <feature>     Archive a completed feature
-  /rpi:party                 Celebrate a shipped feature
+  /rpi:party                 Multi-agent debate on any topic
 
 Agents (13):
-  Luna (PM) · Atlas (Architect) · Scout (Researcher) · Nexus (Integrator)
-  Mestre (Lead) · Clara (Simplifier) · Pixel (UX) · Forge (Builder)
-  Sage (Advisor) · Razor (Optimizer) · Hawk (Reviewer) · Shield (QA)
+  Luna (Analyst) · Atlas (Explorer) · Scout (Researcher) · Nexus (Synthesizer)
+  Mestre (Architect) · Clara (PM) · Pixel (UX) · Forge (Builder)
+  Sage (Tester) · Razor (Simplifier) · Hawk (Reviewer) · Shield (Security)
   Quill (Doc Writer)
 `);
 }
