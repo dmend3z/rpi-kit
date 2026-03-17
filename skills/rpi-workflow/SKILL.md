@@ -149,6 +149,7 @@ Output is saved to `rpi/solutions/decisions/` when requested.
 /rpi:party      -- multi-agent debate on any topic
 /rpi:learn      -- manually capture a solution/insight
 /rpi:archive    -- merge delta into specs, delete feature folder
+/rpi:update      -- update RPIKit to the latest version from remote
 /rpi:onboarding -- first-time setup, analyzes codebase, guides the user
 ```
 

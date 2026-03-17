@@ -50,6 +50,7 @@ Use `/rpi <feature>` to auto-detect the current phase and progress to the next o
 | `/rpi:party <topic>` | Multi-agent debate on any topic |
 | `/rpi:learn` | Save a solution or insight to the knowledge base |
 | `/rpi:archive <feature>` | Merge delta specs into `rpi/specs/` and clean up |
+| `/rpi:update` | Update RPIKit plugin to the latest version |
 | `/rpi:onboarding` | Guided first-time setup with codebase analysis |
 
 ## Agents
