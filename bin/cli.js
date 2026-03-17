@@ -73,6 +73,107 @@ function installGeminiCLI() {
   return true;
 }
 
+function findInstalledPlugin() {
+  const home = process.env.HOME || process.env.USERPROFILE;
+  const searchDirs = [
+    path.join(home, ".claude", "plugins", "marketplaces", "rpi-kit"),
+    path.join(home, ".claude", "plugins", "installed", "rpi-kit"),
+  ];
+  for (const dir of searchDirs) {
+    if (fs.existsSync(path.join(dir, ".claude-plugin", "plugin.json"))) {
+      return dir;
+    }
+  }
+  // Glob fallback
+  const pluginsRoot = path.join(home, ".claude", "plugins");
+  if (fs.existsSync(pluginsRoot)) {
+    const { execFileSync } = require("child_process");
+    try {
+      const result = execFileSync("find", [pluginsRoot, "-path", "*/rpi-kit/.claude-plugin/plugin.json", "-maxdepth", 5], { encoding: "utf8" }).trim();
+      if (result) {
+        const pluginJson = result.split("\n")[0];
+        return path.resolve(pluginJson, "..", "..");
+      }
+    } catch {}
+  }
+  return null;
+}
+
+function updatePlugin() {
+  const pluginDir = findInstalledPlugin();
+  if (!pluginDir) {
+    log("RPIKit installation not found in ~/.claude/plugins/.");
+    log("Install first: claude plugin install rpi-kit");
+    return false;
+  }
+
+  const gitDir = path.join(pluginDir, ".git");
+  if (!fs.existsSync(gitDir)) {
+    log("Installed plugin has no .git directory — cannot update via git pull.");
+    log("Re-install to enable updates:");
+    log("  claude plugin remove rpi-kit");
+    log("  claude plugin install git@github.com:dmend3z/rpi-kit.git");
+    return false;
+  }
+
+  // Current version
+  let currentVersion = "unknown";
+  try {
+    const pj = JSON.parse(fs.readFileSync(path.join(pluginDir, ".claude-plugin", "plugin.json"), "utf8"));
+    currentVersion = pj.version || "unknown";
+  } catch {}
+
+  const currentCommit = spawnSync("git", ["-C", pluginDir, "rev-parse", "--short", "HEAD"], { encoding: "utf8" });
+  const oldCommit = (currentCommit.stdout || "").trim();
+
+  log(`Current: v${currentVersion} (${oldCommit})`);
+  log("Pulling latest...");
+
+  const pull = spawnSync("git", ["-C", pluginDir, "pull", "origin", "main"], { encoding: "utf8", stdio: "pipe" });
+
+  if (pull.status !== 0) {
+    log("Git pull failed:");
+    log(pull.stderr || pull.stdout || "Unknown error");
+    return false;
+  }
+
+  if ((pull.stdout || "").includes("Already up to date")) {
+    log("Already up to date.");
+    return true;
+  }
+
+  // New version
+  let newVersion = "unknown";
+  try {
+    const pj = JSON.parse(fs.readFileSync(path.join(pluginDir, ".claude-plugin", "plugin.json"), "utf8"));
+    newVersion = pj.version || "unknown";
+  } catch {}
+
+  const newCommit = spawnSync("git", ["-C", pluginDir, "rev-parse", "--short", "HEAD"], { encoding: "utf8" });
+  const newHash = (newCommit.stdout || "").trim();
+
+  // Changelog
+  if (oldCommit) {
+    const changelog = spawnSync("git", ["-C", pluginDir, "log", "--oneline", `${oldCommit}..${newHash}`], { encoding: "utf8" });
+    if (changelog.stdout) {
+      log(`\nv${currentVersion} (${oldCommit}) → v${newVersion} (${newHash})\n`);
+      log("Changes:");
+      log(changelog.stdout.trim());
+    }
+  }
+
+  // Clear cache
+  const home = process.env.HOME || process.env.USERPROFILE;
+  const cacheDir = path.join(home, ".claude", "plugins", "cache", "rpi-kit");
+  if (fs.existsSync(cacheDir)) {
+    fs.rmSync(cacheDir, { recursive: true, force: true });
+    log("\nPlugin cache cleared.");
+  }
+
+  log("\nRestart Claude Code to load the new version.");
+  return true;
+}
+
 function uninstallClaude() {
   log("Removing RPIKit from Claude Code...");
   try {
@@ -99,11 +200,12 @@ Usage:
   rpi-kit install --claude   Install for Claude Code only
   rpi-kit install --codex    Install for Codex only (copies AGENTS.md to cwd)
   rpi-kit install --gemini   Install for Gemini CLI only
+  rpi-kit update             Update installed plugin to latest version
   rpi-kit uninstall          Remove from Claude Code
   rpi-kit onboarding         Interactive walkthrough of the workflow
   rpi-kit help               Show this help
 
-Commands (14):
+Commands (15):
   /rpi:new <feature>         Describe your feature → REQUEST.md
   /rpi:research <feature>    Parallel agent analysis → RESEARCH.md
   /rpi:plan <feature>        Generate specs + tasks → PLAN.md
@@ -116,6 +218,7 @@ Commands (14):
   /rpi:status                Show all features and their phases
   /rpi <feature>             Auto-progress to next phase
   /rpi:onboarding            Guided first-time setup
+  /rpi:update                Update plugin to latest version
   /rpi:learn [description]   Capture a solution to knowledge base
   /rpi:archive <feature>     Archive a completed feature
   /rpi:party                 Multi-agent debate on any topic
@@ -237,6 +340,10 @@ async function run() {
       
       break;
     }
+
+    case "update":
+      updatePlugin();
+      break;
 
     case "onboarding": {
       const { run } = require("./onboarding");

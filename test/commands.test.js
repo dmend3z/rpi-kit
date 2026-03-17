@@ -22,6 +22,7 @@ const EXPECTED_COMMANDS = [
   "learn",
   "archive",
   "onboarding",
+  "update",
 ];
 
 const EXPECTED_AGENTS = [
