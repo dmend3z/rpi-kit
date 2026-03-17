@@ -1,59 +1,83 @@
 ---
 name: rpi-agents
-description: This skill should be used when the user asks about RPI agent behavior, rules, or roles, asks "what agents are involved", "how does the code reviewer work", "what are the agent rules", "customize agent behavior", or mentions agent names like requirement-parser, product-manager, ux-designer, senior-engineer, cto-advisor, doc-synthesizer, plan-executor, code-simplifier, code-reviewer, explore-codebase, test-engineer, or doc-writer.
-version: 1.0.1
-license: MIT
+description: This skill should be used when the user asks about RPIKit agents, their roles, or behavior.
 ---
 
-# RPI Agent Guidelines
+# RPIKit Agents
 
-Behavioral constraints for RPI agents. Every agent follows the general rules below PLUS their role-specific rules.
+## Overview
 
-## General Rules (All Agents)
+RPIKit v2 uses 13 named agents with rich personas. Each agent has a distinct personality that shapes how it approaches problems, ensuring diverse perspectives across the development pipeline.
 
-1. **Cite evidence.** Every claim must reference a specific file, dependency, or codebase pattern. No unsupported statements.
-2. **Name unknowns.** If you're uncertain, say what you don't know. Never fill gaps with assumptions.
-3. **Be concrete.** Anti-pattern: "This could improve performance." Instead: "Batching the 3 API calls reduces round-trips from 3 to 1."
-4. **Stay in scope.** Only analyze what's relevant to the feature. Don't audit the entire codebase.
-5. **Structured output.** Use the section format specified for your role. Include your verdict per section.
+## Agent Reference
 
-## Output Format (Research Agents)
+| Name | Role | Phase | Persona |
+|------|------|-------|---------|
+| Luna | Analyst | Request | Curious, asks uncomfortable questions |
+| Atlas | Codebase Explorer | Research | Methodical, evidence-based |
+| Scout | External Investigator | Research | Skeptical, checks everything |
+| Nexus | Synthesizer/Facilitator | Cross-phase | Diplomatic but decisive |
+| Mestre | Architect | Plan | Pragmatic, hates over-engineering |
+| Clara | Product Manager | Plan | Value-driven, cuts scope |
+| Pixel | UX Designer | Plan (conditional) | Empathetic, user-first |
+| Forge | Executor | Implement | Disciplined, follows plan |
+| Sage | Tester | Implement + Review | Paranoid about edge cases |
+| Razor | Simplifier | Simplify | Minimalist, loves deletion |
+| Hawk | Adversarial Reviewer | Review | Forced to find problems |
+| Shield | Security Sentinel | Review | Professionally paranoid |
+| Quill | Technical Writer | Docs | Clear, concise, WHY not WHAT |
 
-Each research agent outputs markdown sections with verdicts:
+## Agents by Phase
 
-```markdown
-## [Section Name]
-Verdict: GO | CONCERN | BLOCK
+- **Request:** Luna
+- **Research:** Atlas + Scout -> Nexus (synthesis)
+- **Plan:** Mestre + Clara + Pixel (conditional) -> Nexus (validation)
+- **Implement:** Forge + Sage (if TDD enabled)
+- **Simplify:** Razor
+- **Review:** Hawk + Shield + Sage (parallel) -> Nexus (synthesis)
+- **Docs:** Quill
+- **Party Mode:** Nexus (facilitator) + 3-5 relevant agents
+- **Archive:** Nexus (merge delta into specs)
 
-[Findings with evidence]
+## Conditional Agents
 
-### [Sub-section if needed]
-[Details]
+**Pixel** only activates when frontend work is detected. Controlled by `.rpi.yaml`:
+
+```yaml
+ux_agent: auto    # auto | always | never
 ```
 
-End with: `Estimated Complexity: S | M | L | XL`
+- `auto` -- Pixel activates when the feature involves UI/frontend components
+- `always` -- Pixel always participates in planning
+- `never` -- Pixel is never activated
 
-## Agent Roles
+## Party Mode Agent Selection
 
-The RPI workflow uses 12 specialized agents. Each has detailed behavioral rules, anti-patterns, and output formats defined in its own file under `agents/`:
+Nexus selects agents based on the topic:
 
-| Agent | Role | Phase |
-|-------|------|-------|
-| requirement-parser | Extract structured, testable requirements | Research |
-| product-manager | Scope, user stories, effort, acceptance criteria | Research, Plan |
-| ux-designer | User flows, interaction patterns, UI decisions | Research (deep), Plan |
-| senior-engineer | Technical approach, architecture, dependencies | Research, Plan |
-| cto-advisor | Risk, feasibility, strategic alignment | Research (deep) |
-| doc-synthesizer | Merge research outputs into RESEARCH.md | Research |
-| explore-codebase | Scan codebase for patterns and context | Research |
-| test-engineer | Write failing tests before implementation (TDD) | Implement (TDD), Test |
-| plan-executor | Implement tasks from PLAN.md surgically | Implement |
-| code-simplifier | Check reuse, quality, efficiency and fix | Implement |
-| code-reviewer | Review implementation against plan | Implement, Review |
-| doc-writer | Generate documentation from artifacts | Docs |
+- **Technical topics** -> Mestre + Atlas + Scout
+- **Product topics** -> Clara + Luna + Pixel
+- **Security topics** -> Shield + Hawk + Mestre
+- **Mixed topics** -> Mestre + Clara + Atlas + Shield
 
-For full role-specific rules, anti-patterns, and output formats, see the individual agent definitions in `agents/*.md`.
+The number of agents defaults to `party_default_agents` in `.rpi.yaml` (default: 4).
 
-## Related
+## Review Dynamics
 
-For the workflow process (phases, commands, configuration), see the **rpi-workflow** skill.
+Review runs three agents in parallel for independent perspectives:
+
+1. **Hawk** -- adversarial code review (quality, patterns, architecture)
+   - Uses 5 perspectives: dev, ops, user, security, business
+   - Forced to find problems (zero findings triggers re-analysis)
+   - Classifies findings: P1 (blocks) | P2 (should fix) | P3 (nice-to-have)
+2. **Shield** -- security audit (OWASP Top 10, secrets, injection, auth bypass)
+3. **Sage** -- test coverage (untested modules, uncovered paths, missing tests)
+4. **Nexus** -- synthesizes findings into final verdict: PASS | PASS with concerns | FAIL
+
+## Knowledge Compounding
+
+When review agents find problems and the dev fixes them:
+
+1. The solution is auto-saved to `rpi/solutions/{category}/`
+2. Categories are auto-detected: performance, security, database, testing, architecture, patterns, decisions
+3. Scout checks solutions/ in future research phases, preventing repeated mistakes

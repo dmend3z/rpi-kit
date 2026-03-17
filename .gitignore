@@ -9,3 +9,7 @@ node_modules/
 *.swo
 Thumbs.db
 .worktrees/
+rpi/features/
+rpi/specs/
+rpi/solutions/
+rpi/context.md

@@ -1,7 +1,7 @@
 ---
 name: rpi:implement
-description: Execute the implementation plan with task-level tracking and smart parallelism.
-argument-hint: "<feature-slug> [--sequential|--parallel] [--resume] [--from-task <id>]"
+description: Execute the plan task by task with Forge. Sage assists with tests if TDD enabled.
+argument-hint: "<feature-name> [--resume] [--force]"
 allowed-tools:
   - Read
   - Write
@@ -10,475 +10,236 @@ allowed-tools:
   - Glob
   - Grep
   - Agent
-  - AskUserQuestion
 ---
 
-<objective>
-Execute tasks from PLAN.md with per-task commits. Track everything in IMPLEMENT.md. Simplification and review run in separate sessions for fresh context.
-</objective>
+# /rpi:implement — Implement Phase
 
-<process>
+Execute PLAN.md task by task. Forge implements each task with strict CONTEXT_READ discipline. If TDD is enabled, Sage writes failing tests before Forge implements.
 
-## 1. Load config and parse arguments
+---
 
-Read `.rpi.yaml` for configuration. Also read `profile` and `models` keys.
-Parse `$ARGUMENTS`:
-- First argument: `{feature-slug}` (required)
-- `--sequential`: force single agent mode
-- `--parallel`: force parallel wave mode
-- `--resume`: resume from last completed task in existing IMPLEMENT.md
-- `--from-task {id}`: resume from a specific task ID (used with --resume)
+## Step 1: Load config and validate
 
-## 1b. Resolve model
-
-Resolve the model for the `implement` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message once before task execution begins.
-
-## 2. Resolve feature path and validate prerequisites
-
-Parse `{feature-slug}` from arguments.
-
-**Resolution order:**
-1. Check if `{folder}/{feature-slug}/` exists → type = "feature", path = `{folder}/{feature-slug}`
-2. If not, Glob `{folder}/*/changes/{feature-slug}/` → if found, type = "change", path = matched path, parent_path = parent directory
-3. If multiple matches → AskUserQuestion listing all matches with full paths
-4. If no match → error: `Feature not found: {feature-slug}. Run /rpi:new {feature-slug} first.`
-
-If `type == "change"`:
-- Set `parent_path` to the parent feature directory
-- Read parent artifacts for agent context:
-  - `{parent_path}/REQUEST.md`
-  - `{parent_path}/research/RESEARCH.md` (if exists)
-  - `{parent_path}/plan/PLAN.md` (if exists)
-  - `{parent_path}/plan/eng.md` (if exists)
-
-Read `{path}/plan/PLAN.md`. If missing:
-```
-Plan not found. Run /rpi:plan {feature-slug} first.
-```
-
-Also read eng.md (and pm.md, ux.md if they exist) for full context.
-
-## 2b. Detect session isolation tier
-
-Read `session_isolation` from `.rpi.yaml` (default: `auto`).
-
-If `session_isolation: off`, skip all isolation logic. Use current behavior.
-
-If `session_isolation: aggressive`, set tier = 3 and max_tasks = 3.
-
-If `session_isolation: auto`:
-1. Read `## Metadata` section from PLAN.md
-2. Extract `suggested_tier` and `context_weight`
-3. If metadata section missing (old plans), compute from tasks:
-   - Count tasks, unique files, max dependency depth
-   - Calculate context_weight
-4. Recalculate plan_hash from current file contents:
-   ```bash
-   cat {sorted existing files from PLAN.md tasks} | shasum -a 256 | cut -d' ' -f1
+1. Read `.rpi.yaml` for config. Apply defaults if missing:
+   - `folder`: `rpi/features`
+   - `context_file`: `rpi/context.md`
+   - `tdd`: `false`
+   - `commit_style`: `conventional`
+2. Parse `$ARGUMENTS` to extract `{slug}` and optional flags:
+   - `--resume`: continue from last completed task (default behavior when IMPLEMENT.md exists)
+   - `--force`: restart implementation from scratch even if IMPLEMENT.md exists
+3. Validate `rpi/features/{slug}/plan/PLAN.md` exists. If not:
    ```
-5. Compare with `plan_hash` from metadata. If different:
+   PLAN.md not found for '{slug}'. Run /rpi:plan {slug} first.
    ```
-   Codebase has changed since planning.
-   Changed files: {list files where content differs}
-   Options:
-   - Continue anyway (changes may be compatible)
-   - Re-plan: /rpi:plan {feature-slug} --force
-   - Review changes manually
+   Stop.
+
+## Step 2: Gather context
+
+1. Read `rpi/features/{slug}/plan/PLAN.md` — store as `$PLAN`.
+2. Read `rpi/features/{slug}/plan/eng.md` if it exists — store as `$ENG`.
+3. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
+4. Parse `$PLAN` to extract the ordered task list. Each task should have:
+   - `task_id`: task number/identifier
+   - `description`: what to implement
+   - `files`: target files to create or modify
+   - `deps`: dependencies on other tasks (must be completed first)
+
+## Step 3: Handle resume vs fresh start
+
+### If IMPLEMENT.md exists and `--force` was NOT passed:
+
+1. Read `rpi/features/{slug}/implement/IMPLEMENT.md`.
+2. Parse completed tasks: lines matching `- [x]` are done, `- [ ]` are pending.
+3. Find the next incomplete task — this is where execution resumes.
+4. Inform the user:
    ```
-   Use AskUserQuestion to let user decide.
-6. Set tier and max_tasks_per_session based on context_weight:
-   - Tier 1 (weight <= 8): max_tasks = unlimited
-   - Tier 2 (weight 9-18): max_tasks = config value or 5
-   - Tier 3 (weight > 18): max_tasks = config value or 4
+   Resuming '{slug}' from task {next_task_id}. ({completed}/{total} tasks done)
+   ```
+5. Skip to Step 5 starting from the next incomplete task.
 
-Inform user:
-```
-Session isolation: Tier {N} (context weight: {weight})
-{Tier 1: "Single session — no checkpoints needed"}
-{Tier 2: "Session warning after {max_tasks} tasks"}
-{Tier 3: "Forced checkpoints after each wave"}
-```
+### If IMPLEMENT.md exists and `--force` was passed:
 
-## 3. Handle resume
+1. Ask the user: "IMPLEMENT.md already exists for '{slug}'. This will restart from scratch. Continue? (yes/no)"
+2. If no: stop.
+3. If yes: proceed to Step 4 (will overwrite).
 
-If `--resume` or IMPLEMENT.md already exists:
-1. Read all files in `{folder}/{feature-slug}/implement/checkpoints/`
-2. Parse each checkpoint: extract task_id and status
-3. Build completed set from checkpoints where status == "done"
-4. If `--from-task {id}` specified, resume from that task
-5. Otherwise, find first uncompleted task in PLAN.md order
-6. Count completed tasks to determine session task counter start
-7. Inform user: "Resuming from task {id}: {name} ({completed}/{total} done)"
+### If IMPLEMENT.md does not exist:
 
-If IMPLEMENT.md exists and no `--resume`:
-- Ask user: "Implementation in progress ({N}/{total} tasks). Resume or restart?"
+Proceed to Step 4.
 
-## 4. Initialize implementation directory
+## Step 4: Initialize IMPLEMENT.md
 
-If starting fresh:
-```bash
-mkdir -p {folder}/{feature-slug}/implement/checkpoints
-mkdir -p {folder}/{feature-slug}/implement/sessions
-```
-
-Create `{folder}/{feature-slug}/implement/IMPLEMENT.md`:
+1. Ensure directory exists: `rpi/features/{slug}/implement/`
+2. Write `rpi/features/{slug}/implement/IMPLEMENT.md` with all tasks unchecked:
 
 ```markdown
 # Implementation: {Feature Title}
 
-Started: {timestamp}
+Started: {YYYY-MM-DD}
+Plan: rpi/features/{slug}/plan/PLAN.md
 
 ## Tasks
 
-{Copy task checklist from PLAN.md with all boxes unchecked}
+- [ ] Task {1}: {description}
+- [ ] Task {2}: {description}
+- ...
 
-## Deviations
-
-_None yet._
-
-## Simplify Findings
-
-_Pending._
-
-## Review
-
-_Pending._
+## Execution Log
 ```
 
-## 5. Determine execution mode
+## Step 5: Execute tasks in order
 
-Count total uncompleted tasks.
+For each task in PLAN.md order, respecting dependency ordering (a task's deps must all be `[x]` before it runs):
 
-If `--sequential` flag: single agent mode.
-If `--parallel` flag: wave mode.
-Otherwise, use smart default:
-- < {parallel_threshold from config, default 8} tasks → single agent
-- >= threshold → parallel waves
+### Step 5a: TDD — Sage writes tests (if `tdd: true` in config)
 
-## 6. Execute tasks
-
-Initialize session task counter: `tasks_this_session = 0`
-
-### 6a. Agent prompt template (all tiers)
-
-For each task, construct the agent prompt. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in every Agent tool call (plan-executor and test-engineer).
+Launch Sage agent with this prompt:
 
 ```
-You are the plan-executor agent for the RPI workflow.
+You are Sage. Write failing tests for task {task_id} of feature: {slug}
 
-## Pre-Implementation (MANDATORY)
-Before writing ANY code, read ALL target files and output:
-CONTEXT_READ: [list of files examined]
-EXISTING_PATTERNS: [key patterns observed -- naming, error handling, imports]
+## Task
+{task description from PLAN.md}
 
-## Your Task
-**{task_id}** {task_description}
-Effort: {effort}
-Files: {files}
-Test: {test_spec from PLAN.md, if present}
+## Target Files
+{files listed for this task}
 
-## Technical Context
-{contents of eng.md}
+## Engineering Spec
+{$ENG}
 
-If `type == "change"`, add:
+## Project Context
+{$CONTEXT}
 
-## Parent Feature Context
-{contents of parent artifacts read in step 2}
-
-This is a CHANGE to an existing feature. When implementing:
-- Ensure compatibility with existing parent feature code
-- Flag breaking changes as scope deviations
-- Reference parent architecture decisions from eng.md
-
-## Rules
-- Only touch files listed for this task
-- Match patterns from CONTEXT_READ -- do not invent new patterns
-- If blocked, report the blocker -- don't improvise
-- Classify any deviations: cosmetic | interface | scope
-
-## Output Protocol
-Write checkpoint to `{folder}/{feature-slug}/implement/checkpoints/{task_id}.md`:
-
-## Status: {task_id}
-status: done | blocked | deviated
-files_read: ["files examined"]
-files_changed: ["files modified"]
-commit: {hash}
-deviations: none | {severity}: {description}
-duration: {seconds}s
-context_read: ["files from CONTEXT_READ"]
-patterns_followed: ["observed patterns"]
-
-Return single line: `DONE: {task_id} | files: N | deviations: none`
+Your task:
+1. Read existing test files and test patterns in the project
+2. Write tests that verify the expected behavior for this task
+3. Tests MUST fail right now (the implementation doesn't exist yet)
+4. Cover: happy path, error path, at least one edge case
+5. Run the tests and confirm they fail
+6. Output: test file path, test code, and the failing test output
 ```
 
-#### If TDD is enabled (`tdd: true` in config):
+Wait for Sage to complete. Store the test output as `$SAGE_TESTS`. Verify the tests actually fail — if they pass, something is wrong (the behavior may already exist). Inform the user and ask how to proceed.
 
-Before launching plan-executor, run TDD cycle per task:
+### Step 5b: Launch Forge to implement
 
-**RED — Write failing test:**
-Launch test-engineer agent:
+Launch Forge agent with this prompt:
+
 ```
-You are the test-engineer agent for the RPI workflow.
+You are Forge. Implement task {task_id} for feature: {slug}
 
-Read these files for context:
-- {folder}/{feature-slug}/plan/PLAN.md
-- {folder}/{feature-slug}/plan/eng.md
+## Task
+{task description from PLAN.md}
 
-Current task:
-**{task_id}** {task_description}
-Files: {files}
-Test: {test_spec from PLAN.md, if present}
+## Target Files
+{files listed for this task}
 
-Write ONE failing test for this task.
-- Exercise real code through public interfaces
-- Clear, behavior-describing test name
-- Minimal assertions — one logical check
-- Follow project test conventions
-- Do NOT write implementation code
+## Dependencies Completed
+{list of completed task IDs and their descriptions}
+
+## Engineering Spec
+{$ENG}
+
+## Project Context
+{$CONTEXT}
+
+## Tests to Pass
+{$SAGE_TESTS if TDD enabled, otherwise "No TDD tests — follow the plan."}
+
+CRITICAL RULES:
+1. CONTEXT_READ: You MUST read ALL target files before writing ANY code
+2. Match existing patterns — naming, error handling, imports, style
+3. Only touch files listed in the task unless absolutely necessary
+4. If TDD: make the failing tests pass
+5. Commit your changes with a conventional commit message
+6. Report: DONE | BLOCKED | DEVIATED
 ```
 
-**VERIFY RED:** Run test → must fail for expected reason.
-**GREEN:** Launch plan-executor with the prompt template above, adding: "The following test is FAILING: {test_file}:{test_name}. Write MINIMAL code to pass it."
-**VERIFY GREEN:** Run test + full suite → all pass.
-**REFACTOR:** Clean up, re-run tests.
-**Additional cycles:** Repeat RED → GREEN → REFACTOR for each test scenario.
+### Step 5c: Parse Forge response
 
-### Tier 1 execution (Inline — weight <= 8):
+Forge will respond with one of three statuses:
 
-For each task in order (respecting dependencies):
-1. Launch plan-executor agent (foreground) with the prompt template
-2. Agent returns full result
-3. Extract status line from result. Discard rest.
-4. Increment `tasks_this_session`
-5. If config `commit_style` is `conventional`: verify agent committed, or stage and commit
-6. Proceed to next task
+#### DONE
 
-### Tier 2 execution (File-mediated — weight 9-18):
-
-For each task in order (respecting dependencies):
-1. Launch plan-executor agent (foreground) with the prompt template
-2. Agent writes checkpoint file and returns 1-line status
-3. Parse status line only. Do NOT read the full agent response for context.
-4. Increment `tasks_this_session`
-5. If config `commit_style` is `conventional`: verify agent committed
-6. **Session warning check**: if `tasks_this_session >= max_tasks_per_session`:
+1. Task completed successfully.
+2. Extract the commit hash from Forge's commit.
+3. If TDD enabled: verify tests now pass. If tests still fail, inform the user and ask how to proceed.
+4. Update IMPLEMENT.md: change `- [ ] Task {id}` to `- [x] Task {id}` and append to Execution Log:
    ```
-   Session getting long ({tasks_this_session} tasks completed).
-   Consider starting a new session for better accuracy:
-   /rpi:implement {feature-slug} --resume
+   ### Task {id}: {description}
+   - Status: DONE
+   - Commit: {hash}
+   - Files: {list of files changed}
    ```
-   Continue if user wants to proceed.
-7. Proceed to next task
+5. Continue to next task.
 
-### Tier 3 execution (Wave-isolated — weight > 18):
+#### BLOCKED
 
-1. Group tasks by phase from PLAN.md
-2. Within each phase, identify dependency waves:
-   - Wave 1: tasks with no deps (or deps already completed)
-   - Wave 2: tasks depending only on wave 1
-   - Wave 3: tasks depending on waves 1-2
-3. For each wave:
-   a. Launch ALL wave tasks as parallel foreground agents (one message, multiple Agent calls)
-   b. Each agent uses the prompt template
-   c. Wait for all agents in wave to complete
-   d. For each completed agent, parse status line only
-   e. Increment `tasks_this_session` by wave size
-   f. **Deviation check** (see section 6b)
-   g. **Rollback check** (see section 6c)
-4. After each wave, **forced session checkpoint** (see section 6d)
-
-## 6b. Handle deviations
-
-After each task (all tiers) or after each wave (Tier 3):
-
-1. Parse the status line for deviations
-2. If `deviations: none` — continue
-3. If deviation reported, read the checkpoint file to get severity:
-   - `cosmetic`: log in IMPLEMENT.md, continue automatically
-   - `interface`:
-     a. Read PLAN.md to find tasks that depend on the current task
-     b. Check if any dependent task's `Files:` field overlaps with the deviated files
-     c. If overlap: pause execution, ask user:
-        ```
-        Task {task_id} changed an interface ({description}).
-        Downstream tasks that may be affected: {list}
-        Options:
-        - Continue (downstream agents will read the actual code)
-        - Pause and review the change
-        - Revert task {task_id} and re-plan
-        ```
-     d. If no overlap: log, continue
-   - `scope`:
-     a. Pause execution immediately
-     b. Read full checkpoint file for details
-     c. Ask user:
-        ```
-        Task {task_id} deviated in scope: {description}
-        Options:
-        - Accept the deviation and continue
-        - Revert task {task_id}: git revert {commit_hash}
-        - Stop implementation for manual review
-        ```
-
-## 6c. Rollback protocol (Tier 3 parallel waves only)
-
-If any task in a wave reports `status: blocked`:
-
-1. Identify the blocked task and its reason
-2. Read PLAN.md dependency graph
-3. Find completed tasks in the SAME wave that depend on the blocked task:
+1. Forge could not complete the task.
+2. Update IMPLEMENT.md with blocker details:
    ```
-   invalidated = [t for t in wave_completed if blocked_task_id in t.deps]
+   ### Task {id}: {description}
+   - Status: BLOCKED
+   - Reason: {blocker description from Forge}
    ```
-4. For each invalidated task:
-   a. Read its checkpoint file to get commit hash
-   b. Run: `git revert {commit_hash} --no-commit`
-   c. Update checkpoint file: `status: rolled_back`
-5. If any reverts were staged:
-   ```bash
-   git commit -m "revert: rollback tasks {list} due to {blocked_task_id} failure"
+3. Stop execution. Inform the user:
    ```
-6. Inform user:
+   Implementation blocked at task {id}: {description}
+
+   Blocker: {reason}
+
+   Options:
+   - Fix the blocker and run: /rpi:implement {slug} --resume
+   - Skip this task and continue: /rpi:implement {slug} (after manually marking task as skipped)
+   - Re-plan: /rpi:plan {slug} --force
    ```
-   Task {blocked_task_id} blocked: {reason}
-   Rolled back dependent tasks: {list}
-   Kept independent tasks: {list}
+4. Do NOT continue to the next task.
 
-   Fix the blocker and resume:
-   /rpi:implement {feature-slug} --resume --from-task {blocked_task_id}
+#### DEVIATED
+
+1. Forge deviated from the plan.
+2. Check the deviation severity:
+   - **cosmetic** (naming, formatting): log it, continue automatically.
+   - **interface** (API changes, function signatures): warn the user, ask to accept or revert.
+   - **scope** (extra features, different approach): stop execution, ask the user to accept or revert.
+3. If accepted: update IMPLEMENT.md as DONE with deviation noted:
    ```
-7. Stop execution (do not proceed to next wave)
-
-## 6d. Session checkpoint
-
-Triggered by:
-- Tier 2: user agrees to take a break after session warning
-- Tier 3: after every wave completes
-
-### Checkpoint process:
-
-1. **Aggregate IMPLEMENT.md** from checkpoint files:
-   - Read all files in `{folder}/{feature-slug}/implement/checkpoints/`
-   - Sort by task ID
-   - Build IMPLEMENT.md with all task statuses, files changed, deviations
-   - Preserve existing sections (Simplify Findings, Review) if present
-
-2. **Write session record** to `{folder}/{feature-slug}/implement/sessions/session-{N}.md`:
-   ```markdown
-   # Session {N}
-   Started: {timestamp}
-   Ended: {timestamp}
-   Tier: {tier}
-   Tasks completed: {list of task IDs completed this session}
-   Total progress: {completed}/{total}
-   Next task: {next_task_id}
-   Deviations: {summary or "none"}
+   ### Task {id}: {description}
+   - Status: DONE (with deviation)
+   - Commit: {hash}
+   - Deviation: {severity} — {description}
+   - Files: {list of files changed}
    ```
+4. If reverted: Forge's changes are reverted (git revert), task stays unchecked. Inform the user and stop.
 
-3. **Print resume command**:
-   ```
-   Session checkpoint saved.
-   Completed: {completed}/{total} tasks
-   To continue in a new session:
-   /rpi:implement {feature-slug} --resume
-   ```
+## Step 6: Completion summary
 
-4. **For Tier 3: stop execution**. The user must start a new session.
-   For Tier 2: continue if user wants to, or stop.
+After all tasks are completed, output:
 
-## 7. Phase checkpoint
+```
+Implementation complete: {slug}
 
-After all tasks in a PLAN.md phase complete:
+Tasks: {completed}/{total}
+Commits:
+- {hash1}: {task 1 description}
+- {hash2}: {task 2 description}
+- ...
 
-1. Read checkpoint files for all tasks in the phase
-2. Count completed vs blocked vs deviated
-3. Output:
-   ```
-   Phase {N}: {Phase Name}
-   Tasks: {completed}/{total}
-   Commits: {list from checkpoint files}
-   Deviations: {count by severity}
-   ```
-4. If any tasks blocked, ask user how to proceed before next phase
+{If any deviations: list them here}
 
-## 8. Finalize IMPLEMENT.md
+Next: /rpi {slug}
+Or explicitly: /rpi:simplify {slug}
+```
 
-Rebuild IMPLEMENT.md from all checkpoint files:
-1. Read all files in `checkpoints/`
-2. Build task list with statuses, commits, deviations
-3. Append summary:
+Update IMPLEMENT.md with a final section:
 
 ```markdown
 ## Summary
 
-Completed: {timestamp}
-Total tasks: {N}
-Sessions: {count from sessions/ directory}
-Commits: {list with hashes from checkpoints}
-Deviations: {count by severity}
-
-## Simplify Findings
-
-_Run in a separate session: /rpi:simplify {feature-slug}_
-
-## Review
-
-_Run in a separate session: /rpi:review {feature-slug}_
+- Total tasks: {N}
+- Completed: {N}
+- Blocked: {N}
+- Deviations: {N} ({list severities})
+- Completed: {YYYY-MM-DD}
 ```
-
-## 9. Present result
-
-```
-Implementation complete: {feature-slug}
-{N} tasks completed across {M} phases.
-
-All artifacts: {folder}/{feature-slug}/
-
-Next steps (run each in a new session for fresh context):
-1. /rpi:simplify {feature-slug}
-2. /rpi:review {feature-slug}
-```
-
-## 10. Handle isolation cleanup
-
-Read `isolation` from `.rpi.yaml`.
-
-**If `isolation: none`** — do nothing.
-
-**If `isolation: branch`:**
-Ask the user:
-```
-Feature branch: feature/{feature-slug}
-Want to merge into {main-branch} now? (yes/no)
-```
-If yes:
-```bash
-git checkout {main-branch}
-git merge feature/{feature-slug}
-```
-
-**If `isolation: worktree`:**
-Ask the user:
-```
-Worktree: .worktrees/{feature-slug}
-Branch: feature/{feature-slug}
-Want to merge into {main-branch} and remove the worktree? (yes/no)
-```
-If yes:
-```bash
-cd {project-root}
-git checkout {main-branch}
-git merge feature/{feature-slug}
-git worktree remove .worktrees/{feature-slug}
-```
-If no:
-```
-Worktree preserved at .worktrees/{feature-slug}
-To merge later:
-  git checkout {main-branch} && git merge feature/{feature-slug}
-To remove:
-  git worktree remove .worktrees/{feature-slug}
-```
-
-</process>

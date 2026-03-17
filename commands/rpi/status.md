@@ -1,154 +1,131 @@
 ---
 name: rpi:status
-description: Show all RPI features and their current phase, progress, and status.
-argument-hint: "[feature-slug]"
+description: Show all features, their current phase, and progress.
+argument-hint: "[feature-name]"
 allowed-tools:
   - Read
   - Glob
   - Bash
 ---
 
-<objective>
-Display detailed status cards for all features (or a specific feature) in the RPI workflow.
-</objective>
+# /rpi:status — Feature Status Dashboard
 
-<process>
+Show all active features with their current phase, verdict, and progress. Optionally show detailed view for a specific feature.
 
-## 1. Load config
+---
 
-Read `.rpi.yaml` for folder path. Default to `rpi/` if not found. Also read `profile` and `models` keys.
+## Step 1: Load config
 
-## 2. Discover features and changes
+Read `.rpi.yaml` for config. Apply defaults if missing:
+- `folder`: `rpi/features`
 
-Use Glob to find all top-level `REQUEST.md` files:
-```
-{folder}/*/REQUEST.md
-```
+Parse `$ARGUMENTS` to extract optional `{slug}` for detailed view.
 
-Each parent directory is a feature slug.
+## Step 2: Find all features
 
-Also find all change `REQUEST.md` files:
-```
-{folder}/*/changes/*/REQUEST.md
-```
-
-Parse each match to extract parent_slug and change_slug.
-
-If `$ARGUMENTS` specifies a slug:
-1. Check if it matches a top-level feature → show that feature and its changes
-2. If not, check if it matches a change slug → show just that change (with parent context)
-3. Resolution follows the shared Resolve Feature Path logic:
-   - Check `{folder}/{slug}/` exists → type = "feature"
-   - Glob `{folder}/*/changes/{slug}/` → type = "change"
-   - Multiple matches → AskUserQuestion
+Glob `{folder}/*/REQUEST.md` to find all active features.
 
 If no features found:
 ```
-No RPI features found in {folder}/.
-Run /rpi:new to start your first feature.
+No features found. Run /rpi:new to start.
 ```
+Stop.
 
-## 3. Determine phase for each feature
+## Step 3: Detect phase for each feature
 
-For each feature slug, check which files exist:
+For each feature directory found, determine the current phase by checking which artifacts exist:
 
-- `REQUEST.md` exists, no `research/RESEARCH.md` → Phase: **new**
-- `research/RESEARCH.md` exists, no `plan/PLAN.md` → Phase: **researched**
-- `plan/PLAN.md` exists, no `implement/IMPLEMENT.md` → Phase: **planned**
-- `implement/IMPLEMENT.md` exists → Phase: **implementing** or **complete**
+1. Has `REQUEST.md`, no `research/RESEARCH.md` → phase = **request** (next: research)
+2. Has `research/RESEARCH.md`, no `plan/PLAN.md` → phase = **research** (next: plan)
+3. Has `plan/PLAN.md`, no `implement/IMPLEMENT.md` → phase = **plan** (next: implement)
+4. Has `implement/IMPLEMENT.md` with unchecked tasks (`- [ ]`) → phase = **implement** (in progress)
+5. Has `implement/IMPLEMENT.md` with all tasks checked, no "## Simplify" section → phase = **implement** (next: simplify)
+6. Has "## Simplify" section, no "## Review Verdict" section → phase = **simplify** (next: review)
+7. Has "## Review Verdict" with PASS → phase = **review** (next: docs)
+8. Everything done → phase = **complete**
 
-For each change, determine phase using the same logic as features,
-but looking in `{folder}/{parent_slug}/changes/{change_slug}/` instead.
+## Step 4: Gather metadata per feature
 
-## 4. Gather details per feature
+For each feature:
 
-For each feature, read the relevant files to extract:
+### Verdict
+- Read `research/RESEARCH.md` if it exists. Look for `## Verdict` section. Extract: GO | GO with concerns | NO-GO.
+- If no RESEARCH.md: verdict = "pending"
 
-**If researched or later:**
-- Read RESEARCH.md executive summary for verdict and complexity
+### Complexity
+- Read `REQUEST.md`. Look for `## Complexity Estimate` section. Extract: S | M | L | XL.
+- If not found: complexity = "unknown"
 
-**If planned or later:**
-- Read PLAN.md to count total tasks and phases
+### Task progress (if plan/implement exists)
+- Read `plan/PLAN.md` if it exists. Count total tasks (lines matching `- [ ]` or `- [x]` pattern).
+- Read `implement/IMPLEMENT.md` if it exists. Count completed tasks (`- [x]`) vs total.
+- Express as: `{completed}/{total} tasks`
 
-**If implementing:**
-- Check for checkpoint files in `{folder}/{slug}/implement/checkpoints/`
-- If checkpoints exist:
-  - Read each checkpoint file, parse status and task_id
-  - Count done / blocked / deviated / rolled_back
-  - Identify current task (first unchecked in PLAN.md order that has no checkpoint)
-  - Read latest session file in `sessions/` for session count and tier
-- If no checkpoints (old-style):
-  - Fall back to reading IMPLEMENT.md for `[x]` vs `[ ]` counts
-- Check for review verdict in IMPLEMENT.md
+## Step 5: Display status
 
-**If complete:**
-- Read IMPLEMENT.md for final review verdict and completion timestamp
+### If no specific feature requested (overview mode)
 
-## 5. Display detailed cards
+Output a status card per feature, sorted by phase (most advanced first):
 
-First, display the active profile at the top of the output. Resolve the effective model for each phase using the Model Resolution Algorithm in the rpi-workflow skill:
-- With profile: `Profile: {profile} (research: {model}, plan: {model}, implement: {model}, review: {model})`
-- With overrides, mark overridden phases with `*`: `Profile: balanced (research: opus, plan: opus, implement: opus*, review: opus)`
-- No profile: `Profile: none (inheriting parent model)`
-
-Then output a card per feature:
-
-```markdown
-## {feature-slug}
-Phase: {phase} ({progress details})
-Verdict: {GO|GO with concerns|NO-GO|—}
-{Complexity: S|M|L|XL (if known)}
-{Tier: 1|2|3 (context weight: {weight}) (if implementing)}
-{Sessions: {count} (if implementing with checkpoints)}
-{Current: Task {id} — {name} (if implementing)}
-{Blocked: Task {id} — {reason} (if any blocked)}
-{Review: PASS|FAIL (if reviewed)}
 ```
-
-### Example output:
-
-```markdown
 # RPI Status
 
-Profile: balanced (research: opus, plan: opus, implement: sonnet, review: opus)
+## {feature-slug}
+Phase: {phase} {task_progress if applicable}
+Verdict: {verdict}
+Complexity: {complexity}
 
-## oauth2-auth
-Phase: implement (6/9 tasks)
-Verdict: GO
-Complexity: M
-Tier: 2 (context weight: 14.5)
-Sessions: 2
-Current: Task 2.1 — Login component
-  └─ add-social-login  [research: GO]
-  └─ fix-token-refresh  [new]
+## {feature-slug-2}
+Phase: {phase}
+Verdict: {verdict}
+Complexity: {complexity}
 
-## payment-system
-Phase: research
-Verdict: pending
-Complexity: —
-
-## dark-mode
-Phase: plan (ready to implement)
-Verdict: GO
-Complexity: S
-
-## csv-export
-Phase: new
-Verdict: —
+---
+{total_count} feature(s) active
 ```
 
-Changes are displayed indented under their parent feature with `└─` prefix.
-Each change shows its own phase status using the same rules as features.
+Phase display format:
+- `request` → "request (awaiting research)"
+- `research` → "research (awaiting plan)"
+- `plan` → "plan (awaiting implement)"
+- `implement` → "implement ({completed}/{total} tasks)"
+- `simplify` → "simplify (awaiting review)"
+- `review` → "review (awaiting docs)"
+- `complete` → "complete"
 
-## 6. Suggest next action
+### If specific feature requested (detailed mode)
 
-For each feature, suggest the logical next command:
-- **new** → `/rpi:research {slug}`
-- **researched (GO)** → `/rpi:plan {slug}`
-- **researched (NO-GO)** → Review alternatives or `/rpi:plan {slug} --force`
-- **planned** → `/rpi:implement {slug}`
-- **implementing** → `/rpi:implement {slug} --resume`
-- **complete (PASS)** → Done
-- **complete (FAIL)** → `/rpi:review {slug}`
+If `{slug}` was provided in arguments, show detailed view for that feature:
 
-</process>
+```
+# RPI Status: {slug}
+
+Phase: {phase} {task_progress}
+Verdict: {verdict}
+Complexity: {complexity}
+
+## Artifacts
+- REQUEST.md: {exists/missing}
+- research/RESEARCH.md: {exists/missing}
+- plan/PLAN.md: {exists/missing}
+- plan/eng.md: {exists/missing}
+- plan/pm.md: {exists/missing}
+- plan/ux.md: {exists/missing}
+- implement/IMPLEMENT.md: {exists/missing}
+- delta/: {count of files in ADDED + MODIFIED + REMOVED}
+
+## Tasks
+{If PLAN.md exists, list all tasks with their status: [x] or [ ]}
+
+## Review
+{If Review Verdict exists in IMPLEMENT.md, show verdict and finding counts}
+
+## Next
+{Suggest the next command to run, e.g. "/rpi {slug}" or "/rpi:archive {slug}" if complete}
+```
+
+If the requested feature does not exist:
+```
+Feature '{slug}' not found. Available features:
+- {list of existing feature slugs}
+```

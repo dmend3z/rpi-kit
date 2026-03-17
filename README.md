@@ -1,218 +1,165 @@
-# RPIKit
+# RPIKit -- Research -> Plan -> Implement
 
-**Research → Plan → Implement.** A systematic feature development workflow for Claude Code and Codex.
+AI-assisted feature development with 13 named agents, delta specs, and knowledge compounding.
 
-RPIKit guides AI-first developers through a structured 3-phase pipeline with validation gates, multi-role agent teams, and adaptive depth — so you research before you plan, and plan before you code.
-
-## Install
-
-### Claude Code
-
-**From the marketplace (recommended):**
-
-```bash
-claude plugin install rpi-kit
-```
-
-**From npm:**
-
-```bash
-npm install -g rpi-kit
-```
-
-The postinstall script registers the plugin automatically. If it fails, register manually:
-
-```bash
-claude plugin install /path/to/rpi-kit
-```
-
-> **Tip:** `npm root -g` shows where global packages are installed. The path is usually something like `~/.nvm/versions/node/vX.X.X/lib/node_modules/rpi-kit`.
-
-**From source:**
-
-```bash
-git clone https://github.com/dmend3z/rpi-kit.git
-claude --plugin-dir ./rpi-kit
-```
-
-### Codex (OpenAI)
-
-Copy `AGENTS.md` and `codex.md` to your project root. The workflow rules and agent definitions will be available to Codex automatically.
+RPIKit is a Claude Code plugin that guides developers through a structured 7-phase pipeline. Each phase is run by specialized agents with distinct personas -- so you research before you plan, plan before you code, and review before you ship.
 
 ## Quick Start
 
 ```bash
-# 1. Initialize config (once per project)
+# Install from marketplace
+claude plugin install rpi-kit
+
+# First time: guided setup
+/rpi:onboarding
+
+# Or configure manually
 /rpi:init
-
-# 2. Describe your feature
-/rpi:new oauth2-auth
-
-# 3. Research feasibility (GO/NO-GO verdict)
-/rpi:research oauth2-auth
-
-# 4. Generate implementation plan
-/rpi:plan oauth2-auth
-
-# 5. Build it (with automatic simplify + review)
-/rpi:implement oauth2-auth
 ```
+
+## How It Works
+
+RPIKit breaks feature development into 7 phases, each driven by named agents:
+
+| # | Phase | Command | Agents | Output |
+|---|-------|---------|--------|--------|
+| 1 | **Request** | `/rpi:new` | Luna | `REQUEST.md` -- elicited requirements |
+| 2 | **Research** | `/rpi:research` | Atlas + Scout + Nexus | `RESEARCH.md` -- GO/NO-GO verdict |
+| 3 | **Plan** | `/rpi:plan` | Mestre + Clara + Pixel + Nexus | `PLAN.md` + `eng.md` + `pm.md` + `ux.md` + `delta/` |
+| 4 | **Implement** | `/rpi:implement` | Forge + Sage | Code + `IMPLEMENT.md` |
+| 5 | **Simplify** | `/rpi:simplify` | Razor | Simplified code |
+| 6 | **Review** | `/rpi:review` | Hawk + Shield + Sage + Nexus | PASS / FAIL verdict |
+| 7 | **Docs** | `/rpi:docs` | Quill | Updated documentation |
+
+Use `/rpi <feature>` to auto-detect the current phase and progress to the next one.
 
 ## Commands
 
-| Command | Purpose |
-|---------|---------|
-| `/rpi:init` | Configure RPI for this project (folder, tier, preferences) |
-| `/rpi:new` | Interactive interview → REQUEST.md |
-| `/rpi:research` | Parallel agent research → RESEARCH.md + GO/NO-GO |
-| `/rpi:plan` | Adaptive plan artifacts → PLAN.md + eng/pm/ux.md |
-| `/rpi:implement` | Execute plan with task tracking + simplify + review |
-| `/rpi:test` | TDD cycles (RED → GREEN → REFACTOR) per task |
-| `/rpi:simplify` | Code simplification (reuse, quality, efficiency) |
+| Command | Description |
+|---------|-------------|
+| `/rpi <feature>` | Auto-flow -- detects current phase and runs the next one |
+| `/rpi:new <feature>` | Interactive interview with Luna to create REQUEST.md |
+| `/rpi:research <feature>` | Codebase analysis (Atlas) + technical investigation (Scout) |
+| `/rpi:plan <feature>` | Architecture (Mestre) + product spec (Clara) + UX (Pixel) |
+| `/rpi:implement <feature>` | Execute PLAN.md tasks with per-task commits (Forge) |
+| `/rpi:simplify <feature>` | Dead code removal and simplification (Razor) |
+| `/rpi:review <feature>` | Adversarial review (Hawk) + security audit (Shield) + test coverage (Sage) |
+| `/rpi:docs <feature>` | Generate documentation from artifacts (Quill) |
+| `/rpi:init` | Configure RPIKit and generate `rpi/context.md` |
 | `/rpi:status` | Show all features and their current phase |
-| `/rpi:review` | Code review against plan requirements + test coverage |
-| `/rpi:docs` | Generate documentation from implementation artifacts |
-| `/rpi:add-todo` | Capture quick implementation ideas in `{folder}/todos/` |
-| `/rpi:set-profile` | Switch the active model profile for agent execution |
+| `/rpi:party <topic>` | Multi-agent debate facilitated by Nexus |
+| `/rpi:learn` | Save a solution or insight to the knowledge base |
+| `/rpi:archive <feature>` | Merge delta specs into `rpi/specs/` and clean up |
+| `/rpi:onboarding` | Guided first-time setup with codebase analysis |
 
-## Research Tiers
+## Agents
 
-Control depth and cost with tier flags:
+RPIKit uses 13 named agents, each with a distinct persona:
 
-| Tier | Agents | Use when |
-|------|--------|----------|
-| `--quick` | 2 (requirements + codebase) | Small features, quick feasibility check |
-| `--standard` | 4 (+ PM + engineer) | Default. Most features. |
-| `--deep` | 5-6 (+ CTO + UX designer if UI) | Large features, risky changes, new architecture |
+| Agent | Persona | Phase | Tools |
+|-------|---------|-------|-------|
+| **Luna** | Curious analyst who asks uncomfortable questions | Request | Read, Glob, Grep, AskUserQuestion |
+| **Atlas** | Methodical explorer who maps every corner of the codebase | Research | Read, Glob, Grep |
+| **Scout** | Skeptical investigator who researches external options | Research | Read, Glob, Grep, WebSearch, WebFetch |
+| **Nexus** | Diplomatic synthesizer who merges outputs and facilitates debates | Cross-phase + Party | Read, Write, Glob, Grep, Agent, AskUserQuestion |
+| **Mestre** | Pragmatic architect who hates over-engineering | Plan | Read, Glob, Grep |
+| **Clara** | Value-driven PM who cuts scope without mercy | Plan | Read, Glob, Grep |
+| **Pixel** | Empathetic UX designer who thinks from the user's perspective | Plan (conditional) | Read, Glob, Grep |
+| **Forge** | Disciplined executor who follows the plan precisely | Implement | Read, Write, Edit, Bash, Glob, Grep |
+| **Sage** | Paranoid tester who thinks in edge cases | Implement (TDD) + Review | Read, Write, Edit, Bash, Glob, Grep |
+| **Razor** | Minimalist simplifier who measures quality by deletion count | Simplify | Read, Write, Edit, Bash, Glob, Grep |
+| **Hawk** | Adversarial reviewer forced to find problems (zero findings = re-analyse) | Review | Read, Glob, Grep |
+| **Shield** | Security sentinel who thinks like an attacker (OWASP, secrets, injection) | Review | Read, Glob, Grep |
+| **Quill** | Concise technical writer who explains the "why", not the "what" | Docs | Read, Write, Edit, Glob, Grep |
 
-## Agent Team
+## Key Features
 
-RPIKit simulates a product team with 12 specialized agents:
+### Delta Specs
 
-| Agent | Perspective |
-|-------|-------------|
-| Requirement Parser | Structured requirements, unknowns, implicit needs |
-| Product Manager | Scope, user stories, effort, acceptance criteria |
-| UX Designer | User flows, interaction patterns, existing components |
-| Senior Engineer | Architecture, dependencies, technical decisions |
-| CTO Advisor | Risk assessment, strategic alignment, alternatives |
-| Doc Synthesizer | Merges research into executive summary + verdict |
-| Codebase Explorer | Scans existing code for patterns and context |
-| Plan Executor | Implements tasks surgically, one at a time |
-| Test Engineer | Writes failing tests before implementation (TDD) |
-| Code Simplifier | Reuse, quality, efficiency checks with direct fixes |
-| Code Reviewer | Reviews against plan requirements + test coverage |
-| Doc Writer | Generates documentation from artifacts for completed features |
+Instead of maintaining full specifications, RPIKit captures only what changes. During planning, Mestre generates `delta/ADDED/`, `delta/MODIFIED/`, and `delta/REMOVED/` directories. On archive, Nexus merges deltas into `rpi/specs/`.
 
-All agents follow behavioral constraints inspired by [Karpathy's coding guidelines](https://x.com/karpathy/status/2015883857489522876): cite evidence, name unknowns, be concrete, stay in scope.
+### Party Mode
 
-## Test-Driven Development
+`/rpi:party "GraphQL vs REST?"` starts a multi-agent debate. Nexus selects 3-5 relevant agents, each argues from their persona's perspective, and Nexus synthesizes a recommendation. Results can be saved to `rpi/solutions/decisions/`.
 
-RPIKit supports strict TDD workflows. When enabled, each task follows vertical slices:
+### Knowledge Compounding
 
-```
-RED (write one failing test) → VERIFY RED → GREEN (minimal code) → VERIFY GREEN → REFACTOR → commit
-```
+Solutions discovered during review are automatically saved to `rpi/solutions/`. Use `/rpi:learn` to manually save insights. During research, Scout searches past solutions before looking externally.
 
-### Why vertical slices?
+### Auto-Flow
 
-LLMs tend to write tests in bulk ("horizontal slices"), creating tests that mock internals and verify imagined behavior. Vertical slices force one-test-at-a-time cycles — if a test fails first, the implementation can't be faked.
+`/rpi <feature>` detects the current phase by checking which artifacts exist and runs the next phase automatically. No need to remember which command comes next.
 
-### Enable TDD
+### Quick Flow
 
-```yaml
-# .rpi.yaml
-tdd: true
-test_runner: auto  # or "npm test", "npx vitest", "pytest", etc.
-```
-
-### Two ways to use TDD
-
-1. **Integrated:** Enable `tdd: true` in config. `/rpi:implement` automatically runs RED → GREEN → REFACTOR per task.
-2. **Standalone:** Run `/rpi:test {feature-slug} --task 1.2` to TDD a specific task, or `--all` for all tasks.
-
-### What changes with TDD enabled
-
-- **PLAN.md** includes a `Test:` field per task describing what behavior to verify
-- **Implementation** writes a failing test first, verifies failure, then implements minimal code
-- **Review** checks test coverage and verifies tests exercise real code through public interfaces
-
-## Model Profiles
-
-Control which AI model runs each workflow phase. Profiles optimize the cost/quality tradeoff by using stronger models where reasoning matters most and faster models for mechanical tasks.
-
-| Profile | research | plan | implement | review |
-|---------|----------|------|-----------|--------|
-| `quality-first` | opus | opus | opus | opus |
-| `balanced` | opus | opus | sonnet | opus |
-| `speed-first` | sonnet | sonnet | sonnet | sonnet |
-| `budget` | haiku | sonnet | haiku | sonnet |
-
-### Configure via command
-
-```bash
-/rpi:set-profile balanced
-```
-
-### Configure via `.rpi.yaml`
-
-```yaml
-profile: balanced              # quality-first | balanced | speed-first | budget
-models:                        # Per-phase overrides (optional)
-  implement: opus              # Override a single phase
-```
-
-Per-phase overrides in `models:` take precedence over the profile. No profile configured = all agents inherit the parent session's model (current default behavior).
-
-## Feature Folder Structure
-
-Each feature lives in its own folder (configurable via `.rpi.yaml`):
-
-```
-{folder}/{feature-slug}/        # folder defaults to rpi/
-├── REQUEST.md              # What and why
-├── research/
-│   └── RESEARCH.md         # GO/NO-GO analysis
-├── plan/
-│   ├── PLAN.md             # Task checklist with effort + deps
-│   ├── eng.md              # Technical specification
-│   ├── pm.md               # Product requirements (adaptive)
-│   └── ux.md               # UX design (adaptive)
-└── implement/
-    └── IMPLEMENT.md        # Full audit trail
-```
+For small features, use `--quick` to skip the full research and plan phases. Luna asks 1-2 questions, Forge generates a mini-plan inline, and Razor does a quick simplify. If Forge detects complexity > S during implementation, it stops and suggests the full pipeline.
 
 ## Configuration
 
-Run `/rpi:init` or create `.rpi.yaml` manually:
+Run `/rpi:init` to generate `.rpi.yaml`, or create it manually:
 
 ```yaml
-folder: rpi                    # Feature folder location
-tier: standard                 # Default research tier
-commit_style: conventional     # Commit message format
-parallel_threshold: 8          # Task count for parallel mode
-skip_artifacts: []             # Artifacts to never generate
-isolation: none                # none | branch | worktree
-tdd: false                     # Enable Test-Driven Development
-test_runner: auto              # Test command (auto-detect or explicit)
+version: 2
+
+# Directories
+folder: rpi/features
+specs_dir: rpi/specs
+solutions_dir: rpi/solutions
+context_file: rpi/context.md
+
+# Execution
+parallel_threshold: 8
+commit_style: conventional
+tdd: false
+
+# Conditional agents
+ux_agent: auto                 # auto | always | never
+
+# Quick flow
+quick_complexity: S
+
+# Knowledge compounding
+auto_learn: true
+
+# Party mode
+party_default_agents: 4
 ```
 
-## How It Compares
+## Directory Structure
 
-| | OpenSpec (OPSX) | RPIKit | GSD |
-|---|---|---|---|
-| Focus | Spec-driven artifacts | Feature lifecycle with gates | Full project management |
-| Phases | Fluid (propose/apply) | 3 phases (R→P→I) | Roadmap → phases → tasks |
-| Agents | None | 12 specialized roles | 15+ orchestrated agents |
-| TDD | None | Integrated RED→GREEN→REFACTOR | None |
-| Validation | None | GO/NO-GO research gate | Goal-backward verification |
-| Scope | Single change | Single feature | Entire project |
-| Complexity | Lightweight | Medium | Heavy |
+```
+rpi/
+├── context.md                          # Project conventions and stack
+├── specs/                              # Current system specifications
+│   ├── auth/
+│   │   └── session-management.md
+│   └── ...
+├── solutions/                          # Knowledge base (compounding)
+│   ├── performance/
+│   ├── security/
+│   ├── database/
+│   ├── testing/
+│   ├── architecture/
+│   ├── patterns/
+│   └── decisions/                      # Party mode outputs
+└── features/                           # Active features
+    └── oauth/
+        ├── REQUEST.md
+        ├── research/
+        │   └── RESEARCH.md
+        ├── delta/
+        │   ├── ADDED/
+        │   ├── MODIFIED/
+        │   └── REMOVED/
+        ├── plan/
+        │   ├── PLAN.md
+        │   ├── eng.md
+        │   ├── pm.md
+        │   └── ux.md
+        └── implement/
+            └── IMPLEMENT.md
+```
 
 ## License
 
 MIT
-
-## Credits
-
-Inspired by [GSD](https://github.com/gsd), [OpenSpec](https://github.com/Fission-AI/OpenSpec), and [Andrej Karpathy's coding guidelines](https://x.com/karpathy/status/2015883857489522876).

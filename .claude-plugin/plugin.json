@@ -1,7 +1,7 @@
 {
   "name": "rpi-kit",
-  "version": "1.4.0",
-  "description": "Research → Plan → Implement. A systematic feature development workflow with validation gates, multi-role agent teams, and adaptive depth.",
+  "version": "2.0.0",
+  "description": "Research → Plan → Implement. 7-phase pipeline with 13 named agents, delta specs, party mode, and knowledge compounding.",
   "author": {
     "name": "Daniel Mendes",
     "url": "https://github.com/dmend3z"
@@ -13,8 +13,8 @@
     "research",
     "planning",
     "implementation",
-    "feature-development",
     "agents",
-    "codex"
+    "delta-specs",
+    "knowledge-compounding"
   ]
 }

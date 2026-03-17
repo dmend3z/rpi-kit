@@ -1,7 +1,7 @@
 ---
 name: rpi:simplify
-description: Run code simplification on a feature's implementation. Checks for reuse opportunities, quality issues, and efficiency problems, then fixes them.
-argument-hint: "<feature-slug>"
+description: Razor analyzes the implementation for reuse, quality, and efficiency improvements.
+argument-hint: "<feature-name>"
 allowed-tools:
   - Read
   - Write
@@ -12,120 +12,183 @@ allowed-tools:
   - Agent
 ---
 
-<objective>
-Run 3 parallel code review sub-agents (reuse, quality, efficiency) on the implementation changes, aggregate findings, and fix issues directly.
-</objective>
+# /rpi:simplify — Simplify Phase
 
-<process>
+Razor analyzes the full implementation diff across 3 dimensions — reuse, quality, and efficiency — and applies improvements directly. Tests must pass before and after.
 
-## 1. Load config, resolve path, and identify changes
+---
 
-Read `.rpi.yaml` for folder path. Also read `profile` and `models` keys.
+## Step 1: Load config and validate
 
-Parse `{feature-slug}` from arguments.
+1. Read `.rpi.yaml` for config. Apply defaults if missing:
+   - `folder`: `rpi/features`
+   - `context_file`: `rpi/context.md`
+   - `commit_style`: `conventional`
+2. Parse `$ARGUMENTS` to extract `{slug}`.
+3. Validate `rpi/features/{slug}/implement/IMPLEMENT.md` exists. If not:
+   ```
+   IMPLEMENT.md not found for '{slug}'. Run /rpi:implement {slug} first.
+   ```
+   Stop.
+4. Read `rpi/features/{slug}/implement/IMPLEMENT.md`. Verify all tasks are marked `[x]` (done). If any task is `[ ]` (pending) or `BLOCKED`:
+   ```
+   Implementation is not complete for '{slug}'. {N} tasks remaining.
+   Complete all tasks before simplifying: /rpi:implement {slug}
+   ```
+   Stop.
 
-**Resolution order:**
-1. Check if `{folder}/{feature-slug}/` exists → type = "feature", path = `{folder}/{feature-slug}`
-2. If not, Glob `{folder}/*/changes/{feature-slug}/` → if found, type = "change", path = matched path, parent_path = parent directory
-3. If multiple matches → AskUserQuestion listing all matches with full paths
-4. If no match → error: `Feature not found: {feature-slug}`
+## Step 2: Get implementation diff
 
-Read `{path}/implement/IMPLEMENT.md` to identify what was implemented.
+1. Read `rpi/features/{slug}/implement/IMPLEMENT.md` — extract all commit hashes from the Execution Log.
+2. Use git to get the combined diff of all implementation commits:
+   ```bash
+   git diff {first_commit}^..{last_commit}
+   ```
+3. Store the diff as `$IMPL_DIFF`.
+4. Collect the list of all files changed — store as `$CHANGED_FILES`.
 
-Get the diff of all implementation changes:
-```bash
-git diff HEAD~{number_of_commits}
+## Step 3: Gather context
+
+1. Read `rpi/features/{slug}/plan/eng.md` if it exists — store as `$ENG`.
+2. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
+
+## Step 4: Run tests (baseline)
+
+1. Run the project's test suite to establish baseline:
+   ```bash
+   npm test    # or whatever the project uses
+   ```
+2. If tests fail before simplification:
+   ```
+   Tests are already failing before simplification. Fix failing tests first.
+   ```
+   Stop.
+3. Store the test output as `$BASELINE_TESTS`.
+
+## Step 5: Launch Razor with 3 parallel sub-checks
+
+Launch Razor agent with this prompt:
+
 ```
+You are Razor. Simplify the implementation for feature: {slug}
 
-If no git history, use the files listed in IMPLEMENT.md tasks and read them directly.
+## Implementation Diff
+{$IMPL_DIFF}
 
-## 1b. Resolve model
+## Changed Files
+{$CHANGED_FILES}
 
-Resolve the model for the `implement` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message before agent spawns.
+## Engineering Spec
+{$ENG}
 
-## 2. Launch 3 parallel sub-agents
+## Project Context
+{$CONTEXT}
 
-Use the Agent tool to launch all 3 concurrently in a single message. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in each Agent tool call.
+Your task — analyze the implementation across 3 dimensions IN PARALLEL:
 
-### Agent 1: Reuse Checker
+### 1. Reuse
+- Scan for duplicated code within the changed files
+- Scan for duplication against existing codebase utilities
+- Identify extraction opportunities (shared functions, constants, types)
+- Check for reimplemented functionality that already exists in the project
 
-```
-You are checking code for reuse opportunities.
+### 2. Quality
+- Naming: unclear variable/function names, inconsistent conventions
+- Complexity: functions doing too much, deep nesting, long parameter lists
+- Code smells: magic numbers, dead code, commented-out code, unnecessary abstractions
+- Consistency: does the new code match the patterns in context.md?
 
-Here is the diff of recent changes:
-{diff}
+### 3. Efficiency
+- Algorithm choices: O(n^2) where O(n) is possible, unnecessary iterations
+- Database/API queries: N+1 problems, missing batching, redundant calls
+- Imports: unused imports, heavy imports where lighter alternatives exist
+- Memory: unnecessary copies, large objects held in scope too long
 
-For each change:
-1. Search the codebase for existing utilities and helpers that could replace newly written code. Use Grep to find similar patterns — check utility directories, shared modules, and adjacent files.
-2. Flag any new function that duplicates existing functionality. Cite the existing function.
-3. Flag inline logic that could use an existing utility — hand-rolled string manipulation, manual path handling, custom type guards.
+RULES:
+1. Read ALL changed files before making any modifications
+2. Apply fixes directly to the code — do not just list suggestions
+3. Each fix must preserve existing behavior (no functional changes)
+4. Match the project's existing style and patterns
+5. Do NOT over-abstract — only extract if there are 3+ duplications
+6. After all fixes, list what you changed and why
 
 Output format:
-## Reuse Findings
-- {file}:{line} — {description} → Use existing `{function}` from `{path}`
+## Changes Applied
+- {file}: {what changed} — {why}
+
+## Metrics
+- Reuse: {N} fixes
+- Quality: {N} fixes
+- Efficiency: {N} fixes
+- Lines removed: {N}
+- Lines added: {N}
 ```
 
-### Agent 2: Quality Checker
+Store Razor's output as `$RAZOR_OUTPUT`.
 
-```
-You are checking code quality in recent changes.
+## Step 6: Run tests (verification)
 
-Here is the diff of recent changes:
-{diff}
+1. Run the project's test suite again:
+   ```bash
+   npm test
+   ```
+2. If tests fail after Razor's changes:
+   - Show the failing tests to the user.
+   - Revert Razor's changes: `git checkout -- .`
+   - Inform the user:
+     ```
+     Razor's changes broke {N} tests. Changes have been reverted.
+     Review the failures and re-run: /rpi:simplify {slug}
+     ```
+   - Stop.
+3. If all tests pass: continue.
 
-Check for:
-1. Redundant state — state that duplicates existing state, cached values that could be derived
-2. Parameter sprawl — adding parameters instead of restructuring
-3. Copy-paste with slight variation — near-duplicate blocks that should be unified
-4. Leaky abstractions — exposing internals, breaking abstraction boundaries
-5. Stringly-typed code — raw strings where constants or enums exist
+## Step 7: Commit simplification changes
 
-Output format:
-## Quality Findings
-- {file}:{line} — {pattern}: {description}
-```
+1. Stage all modified files:
+   ```bash
+   git add {list of files Razor modified}
+   ```
+2. Commit with a descriptive message following `commit_style` from config:
+   ```bash
+   git commit -m "refactor({slug}): simplify implementation — Razor"
+   ```
+3. Store the commit hash as `$SIMPLIFY_COMMIT`.
 
-### Agent 3: Efficiency Checker
+## Step 8: Update IMPLEMENT.md
 
-```
-You are checking code efficiency in recent changes.
+Append a simplification results section to `rpi/features/{slug}/implement/IMPLEMENT.md`:
 
-Here is the diff of recent changes:
-{diff}
+```markdown
+## Simplify
 
-Check for:
-1. Unnecessary work — redundant computations, repeated reads, duplicate API calls, N+1 patterns
-2. Missed concurrency — independent operations run sequentially
-3. Hot-path bloat — blocking work on startup or per-request paths
-4. Unnecessary existence checks — TOCTOU anti-pattern
-5. Memory — unbounded structures, missing cleanup, listener leaks
-6. Overly broad operations — reading entire files when portion needed
+Agent: Razor
+Date: {YYYY-MM-DD}
+Commit: {$SIMPLIFY_COMMIT}
 
-Output format:
-## Efficiency Findings
-- {file}:{line} — {pattern}: {description}
-```
+### Changes
+{list of changes from $RAZOR_OUTPUT}
 
-## 3. Aggregate and fix
-
-After all 3 agents complete:
-
-1. Collect all findings
-2. Skip false positives — if a finding doesn't apply or isn't worth fixing, skip silently
-3. Fix each valid issue directly using Edit tool
-4. For each fix, note what was changed
-
-## 4. Output summary
-
-```
-Simplify complete for {feature-slug}:
-- Reuse: {N} findings, {M} fixed
-- Quality: {N} findings, {M} fixed
-- Efficiency: {N} findings, {M} fixed
-
-{Or: "Code was already clean — no issues found."}
+### Metrics
+- Reuse fixes: {N}
+- Quality fixes: {N}
+- Efficiency fixes: {N}
+- Net lines: {+/-N}
 ```
 
-After finishing, update IMPLEMENT.md `## Simplify Findings` section with the results.
+## Step 9: Output summary
 
-</process>
+```
+Simplify complete: {slug}
+
+Razor applied {total} fixes:
+  - Reuse: {N}
+  - Quality: {N}
+  - Efficiency: {N}
+
+Tests: all passing
+Commit: {$SIMPLIFY_COMMIT}
+
+Next: /rpi {slug}
+Or explicitly: /rpi:review {slug}
+```

@@ -1,107 +1,190 @@
 ---
 name: rpi:init
-description: Initialize RPI workflow configuration for this project. Sets up feature folder location, default research tier, and preferences.
+description: Configure RPIKit and generate project-context.md by analyzing your codebase.
 argument-hint: ""
 allowed-tools:
   - Read
   - Write
   - Bash
   - Glob
+  - Grep
+  - Agent
   - AskUserQuestion
 ---
 
-<objective>
-Create a `.rpi.yaml` configuration file at the project root with user preferences for the RPI workflow.
-</objective>
+# /rpi:init — Setup & Context Generation
 
-<process>
+Configure RPIKit for this project: interview the user for preferences, write `.rpi.yaml`, create directory structure, and launch Atlas to generate `rpi/context.md`.
 
-## 1. Check for existing config
+---
 
-Use Glob to search for `.rpi.yaml` at the project root. If it exists, read it and ask the user if they want to reconfigure or keep existing settings.
+## Step 1: Check for existing config
 
-## 2. Interview the user
+Check if `.rpi.yaml` exists in the project root.
 
-Use AskUserQuestion to gather preferences. Ask up to 4 questions at a time:
+If it exists:
+- Read the file and store its contents as `$EXISTING_CONFIG`.
+- Ask the user with AskUserQuestion: "`.rpi.yaml` already exists. Do you want to overwrite it with fresh config, or update specific settings?"
+  - If overwrite: proceed to Step 2 (will replace everything).
+  - If update: proceed to Step 2 but pre-fill answers from `$EXISTING_CONFIG` and only ask about values the user wants to change.
 
-**Batch 1:**
-- "Where should feature folders live?" — Options: `rpi/` (Recommended), `.rpi/`, `docs/features/`, custom path
-- "What's your default research tier?" — Options: `standard` (Recommended), `quick`, `deep`
+If it does not exist: proceed to Step 2.
 
-**Batch 2:**
-- "What commit message style do you prefer?" — Options: `conventional` (Recommended, e.g., feat(1.1): task name), `descriptive` (plain English)
+## Step 2: Interview — Batch 1 (Development preferences)
 
-**Batch 3:**
-- "Task count threshold for parallel execution?" — Options: 8 (Recommended), 5, 12, always sequential
-- "How do you want to isolate features?" — Options: `none` (Recommended — work on current branch), `branch` (create a git branch per feature), `worktree` (create a git worktree + branch in `.worktrees/`)
-- "Session isolation to prevent context drift?" — Options: `auto` (Recommended — adapts to feature complexity), `aggressive` (always checkpoint, maximum isolation), `off` (no session boundaries)
+Ask the user with a single AskUserQuestion call:
 
-**Batch 4 (TDD):**
-- "Enable Test-Driven Development during implementation?" — Options: No (default), Yes
-- If yes: "What command runs your tests?" — Options: auto-detect (Recommended), `npm test`, `npx vitest`, `pytest`, custom
+```
+Let's configure RPIKit for this project. A few quick questions:
 
-**Batch 5 (Model Profiles):**
-- "Which model profile do you want for agent execution?" — Options:
-  - `balanced` (Recommended — opus for research/plan/review, sonnet for implement)
-  - `quality-first` (opus everywhere — maximum quality)
-  - `speed-first` (sonnet everywhere — maximum speed)
-  - `budget` (haiku + sonnet mix — cost optimized, may reduce research quality)
-  - "No profile" (default — all agents inherit parent model)
+1. **TDD** — Should Sage write failing tests before Forge implements? (true/false, default: false)
+2. **Commit style** — conventional commits or freeform? (conventional/freeform, default: conventional)
+3. **UX agent (Pixel)** — When should Pixel participate in planning? (auto = only if frontend detected / always / never, default: auto)
+```
 
-If reconfiguring and a profile already exists, show: "Current profile: {profile}. Change model profile?" with the same options plus "Keep current ({profile})".
+Store the responses. Use defaults for any unanswered or unclear answers.
 
-## 3. Create .rpi.yaml
+## Step 3: Interview — Batch 2 (Workflow preferences)
 
-Write the config file at the project root:
+Ask the user with a single AskUserQuestion call:
+
+```
+Almost done:
+
+1. **Auto-learn** — Should review findings be saved to rpi/solutions/ automatically? (true/false, default: true)
+2. **Party mode agents** — How many agents should participate in /rpi:party debates? (3-5, default: 4)
+```
+
+Store the responses. Use defaults for any unanswered or unclear answers.
+
+## Step 4: Write .rpi.yaml
+
+Write `.rpi.yaml` to the project root with the collected responses and sensible defaults:
 
 ```yaml
-# RPI Workflow Configuration
-# Docs: https://github.com/mndz/rpi-kit
+version: 2
 
-folder: {user_choice}
-tier: {user_choice}
-commit_style: {conventional|descriptive}
-parallel_threshold: {number}
-skip_artifacts: []
-isolation: {none|branch|worktree}
-tdd: {true|false}
-test_runner: {auto|command}
-session_isolation: {auto|aggressive|off}
-max_tasks_per_session: 5      # tasks before session warning (Tier 2) or forced checkpoint (Tier 3)
-profile: {balanced|quality-first|speed-first|budget}  # omit if "No profile" selected
+# Directories
+folder: rpi/features
+specs_dir: rpi/specs
+solutions_dir: rpi/solutions
+context_file: rpi/context.md
+
+# Execution
+parallel_threshold: 8
+commit_style: {user_response or "conventional"}
+tdd: {user_response or false}
+
+# Agents
+ux_agent: {user_response or "auto"}
+
+# Quick flow
+quick_complexity: S
+
+# Knowledge compounding
+auto_learn: {user_response or true}
+
+# Party mode
+party_default_agents: {user_response or 4}
 ```
 
-## 4. Create feature folder
+If updating an existing config: merge user responses into `$EXISTING_CONFIG`, preserving any keys the user did not explicitly change.
 
-Create the configured folder directory if it doesn't exist:
+## Step 5: Create directory structure
+
+Run these commands to create the RPIKit directories:
+
 ```bash
-mkdir -p {folder}
+mkdir -p rpi/specs
+mkdir -p rpi/solutions
+mkdir -p rpi/features
 ```
 
-## 5. Confirm
+## Step 6: Launch Atlas for context generation
 
-Output a brief confirmation:
+Launch Atlas agent to analyze the codebase and generate `rpi/context.md`:
 
-With profile:
 ```
-RPI initialized.
+You are Atlas. Analyze this entire codebase and generate a project context file.
+
+Your task:
+1. Read config files first: package.json, tsconfig.json, pyproject.toml, Cargo.toml, go.mod, Gemfile, composer.json, or whatever exists
+2. Scan the directory structure to understand architecture and layering
+3. Find 5-10 representative source files across different directories
+4. Detect naming conventions, component patterns, import style, error handling
+5. Check for CLAUDE.md, .cursorrules, .clinerules, or similar project rules files
+6. Identify the testing framework and test patterns
+7. Identify styling/CSS approach if frontend
+
+Produce a context file with this EXACT structure:
+
+# Project Context
+
+## Stack
+- Language: {language} {version}
+- Framework: {framework} {version}
+- Database: {db} via {orm} (or "None detected")
+- Testing: {test_framework}
+- Styling: {approach} (or "N/A")
+
+## Conventions
+- File naming: {pattern}
+- Components: {pattern} (or "N/A")
+- Error handling: {pattern}
+- API: {pattern} (or "N/A")
+
+## Architecture
+- {directory}: {purpose}
+- {directory}: {purpose}
+- ...
+
+## Rules
+- {rule 1 derived from codebase analysis or existing rules files}
+- {rule 2}
+- ...
+
+RULES:
+- Be specific — cite actual patterns you found, not generic advice
+- Only include what you can verify from the code
+- If a section doesn't apply (e.g., no database), write "N/A" and move on
+- Keep each section concise — this file is read by every agent on every run
+```
+
+Wait for Atlas to complete. Store the output as `$ATLAS_CONTEXT`.
+
+## Step 7: Write rpi/context.md
+
+Write the Atlas output to `rpi/context.md`.
+
+## Step 8: Output summary
+
+Output to the user:
+
+```
+RPIKit initialized!
+
 Config: .rpi.yaml
-Features: {folder}/
-Tier: {tier}
-Profile: {profile} (research: {model}, plan: {model}, implement: {model}, review: {model})
+Context: rpi/context.md
+Directories: rpi/specs/, rpi/solutions/, rpi/features/
 
-Next: /rpi:new to start your first feature.
+Settings:
+- TDD: {value}
+- Commit style: {value}
+- UX agent: {value}
+- Auto-learn: {value}
+- Party agents: {value}
+
+Quick reference:
+- /rpi:new <feature>     Create a new feature (Luna interviews you)
+- /rpi <feature>         Auto-progress to next phase
+- /rpi:research <feat>   Run research phase
+- /rpi:plan <feat>       Run plan phase
+- /rpi:implement <feat>  Run implement phase
+- /rpi:simplify <feat>   Run simplify phase
+- /rpi:review <feat>     Run review phase
+- /rpi:docs <feat>       Run docs phase
+- /rpi:status            View all features and progress
+- /rpi:party "topic"     Multi-agent debate
+- /rpi:learn             Save a solution manually
+- /rpi:archive <feat>    Archive completed feature
 ```
-
-Without profile:
-```
-RPI initialized.
-Config: .rpi.yaml
-Features: {folder}/
-Tier: {tier}
-Profile: none (agents inherit parent model)
-
-Next: /rpi:new to start your first feature.
-```
-
-</process>

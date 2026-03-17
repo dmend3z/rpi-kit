@@ -1,7 +1,7 @@
 ---
 name: rpi:docs
-description: Generate code documentation from implementation artifacts. Adds inline docs, updates README, generates API docs, and creates changelog entry. Final step in the RPI pipeline.
-argument-hint: "<feature-slug> [--skip-inline] [--skip-readme] [--skip-changelog]"
+description: Quill generates and updates documentation based on the implementation.
+argument-hint: "<feature-name>"
 allowed-tools:
   - Read
   - Write
@@ -10,188 +10,126 @@ allowed-tools:
   - Glob
   - Grep
   - Agent
-  - AskUserQuestion
 ---
 
-<objective>
-Generate documentation for a completed feature using all RPI artifacts as source. Adds inline code documentation, updates project README if needed, generates API docs for new endpoints, and creates a changelog entry.
-</objective>
+# /rpi:docs — Docs Phase
 
-<process>
+Quill reads all feature artifacts and generates documentation: README updates, changelog entries, API docs, and inline comments where non-obvious.
 
-## 1. Load config and parse arguments
+---
 
-Read `.rpi.yaml` for folder path. Also read `profile` and `models` keys.
-Parse `$ARGUMENTS`:
-- First argument: `{feature-slug}` (required)
-- `--skip-inline`: skip adding inline code documentation
-- `--skip-readme`: skip README updates
-- `--skip-changelog`: skip changelog entry
+## Step 1: Load config and validate
 
-## 1b. Resolve model
+1. Read `.rpi.yaml` for config. Apply defaults if missing:
+   - `folder`: `rpi/features`
+   - `context_file`: `rpi/context.md`
+   - `commit_style`: `conventional`
+2. Parse `$ARGUMENTS` to extract `{slug}`.
+3. Validate `rpi/features/{slug}/implement/IMPLEMENT.md` exists. If not:
+   ```
+   IMPLEMENT.md not found for '{slug}'. Run /rpi:implement {slug} first.
+   ```
+   Stop.
 
-Resolve the model for the `review` phase following the Model Resolution Algorithm in the rpi-workflow skill. Store as `{resolved_model}`. If a model is resolved, output the status message before agent spawns.
+## Step 2: Validate review verdict
 
-## 2. Validate prerequisites
+1. Look for a review verdict in `rpi/features/{slug}/implement/IMPLEMENT.md`.
+2. The verdict appears in a `## Review` section as `PASS` or `PASS with concerns`.
+3. If verdict is `FAIL`:
+   ```
+   Review verdict is FAIL for '{slug}'.
+   Fix the issues identified in IMPLEMENT.md and re-run: /rpi:review {slug}
+   ```
+   Stop.
+4. If no review verdict is found:
+   ```
+   No review verdict found for '{slug}'. Run /rpi:review {slug} first.
+   ```
+   Stop.
 
-Verify the feature has passed review. Read `{folder}/{feature-slug}/implement/IMPLEMENT.md`.
+## Step 3: Gather context
 
-Check for review verdict:
-- If verdict is PASS → proceed
-- If verdict is FAIL → error:
-  ```
-  Feature has not passed review. Run /rpi:review {feature-slug} first.
-  ```
-- If IMPLEMENT.md doesn't exist → error:
-  ```
-  Implementation not found. Run /rpi:implement {feature-slug} first.
-  ```
+1. Read `rpi/features/{slug}/REQUEST.md` — store as `$REQUEST`.
+2. Read `rpi/features/{slug}/plan/PLAN.md` — store as `$PLAN`.
+3. Read `rpi/features/{slug}/implement/IMPLEMENT.md` — store as `$IMPLEMENT`.
+4. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
+5. Scan `rpi/features/{slug}/delta/` for all files in ADDED/, MODIFIED/, and REMOVED/ — store as `$DELTA_CONTENTS`.
+6. Read `README.md` from the project root if it exists — store as `$CURRENT_README`.
+7. Read `CHANGELOG.md` from the project root if it exists — store as `$CURRENT_CHANGELOG`.
 
-## 3. Gather all artifacts
+## Step 4: Launch Quill
 
-Read all feature artifacts for context:
-- `{folder}/{feature-slug}/REQUEST.md` — what was requested
-- `{folder}/{feature-slug}/research/RESEARCH.md` — decisions and trade-offs
-- `{folder}/{feature-slug}/plan/eng.md` — technical spec (APIs, models, architecture)
-- `{folder}/{feature-slug}/plan/pm.md` — acceptance criteria (if exists)
-- `{folder}/{feature-slug}/plan/PLAN.md` — task list with files
-- `{folder}/{feature-slug}/implement/IMPLEMENT.md` — what was actually built, deviations
-
-## 4. Identify documentation targets
-
-From IMPLEMENT.md and PLAN.md, collect:
-- All files created or modified
-- New public functions, classes, types, and exports
-- New API endpoints or routes
-- New configuration options or environment variables
-- Deviations from the plan (may need extra documentation)
-
-Use Glob and Grep to read the actual implemented files and identify what needs documentation.
-
-## 5. Launch parallel documentation agents
-
-Use the Agent tool to launch applicable agents concurrently. If a model was resolved in Step 1b, include `model: "{resolved_model}"` in each Agent tool call.
-
-### Agent 1: Inline Documentation (unless --skip-inline)
+Launch Quill agent with this prompt:
 
 ```
-You are documenting code for a completed feature.
+You are Quill. Generate and update documentation for feature: {slug}
 
-Read these artifacts for context:
-- {folder}/{feature-slug}/plan/eng.md
-- {folder}/{feature-slug}/implement/IMPLEMENT.md
+## Request
+{$REQUEST}
 
-Then read each implemented file listed in IMPLEMENT.md.
+## Plan
+{$PLAN}
 
-Add inline documentation ONLY where it adds value:
-1. Public functions/methods: brief JSDoc/docstring with params and return type
-2. Complex logic: short comment explaining WHY, not WHAT
-3. Non-obvious design decisions: reference the trade-off from eng.md
-4. New types/interfaces: brief description of purpose
+## Implementation
+{$IMPLEMENT}
+
+## Delta Specs
+{$DELTA_CONTENTS}
+
+## Project Context
+{$CONTEXT}
+
+## Current README
+{$CURRENT_README or "No README.md found."}
+
+## Current CHANGELOG
+{$CURRENT_CHANGELOG or "No CHANGELOG.md found."}
+
+Your task:
+1. Update README.md with new feature documentation (if the feature adds user-facing behavior or public API)
+   - Add a section or update an existing section — don't rewrite the entire README
+   - Include usage examples with concrete values
+   - If the feature is internal/refactoring only, skip README updates
+2. Write a changelog entry in conventional format
+   - Use the appropriate category: Added, Changed, Fixed, Removed
+   - Reference the feature slug
+   - If CHANGELOG.md exists, prepend the new entry under the correct version
+   - If CHANGELOG.md doesn't exist, create it with a header and the first entry
+3. Add API docs for new public interfaces
+   - Document exported functions, classes, or endpoints introduced by this feature
+   - Include parameter types, return types, and one usage example per interface
+   - Write docs where the project convention places them (JSDoc, docstrings, doc comments, or separate files)
+4. Add inline comments only where the code is non-obvious
+   - Explain WHY, not WHAT
+   - Focus on: non-obvious business rules, workarounds, performance tradeoffs, external API quirks
+   - Do NOT add comments that restate the code
 
 Rules:
-- Do NOT add obvious comments ("// returns the user" on a getUser function)
-- Do NOT document private/internal helpers unless logic is non-trivial
-- Match the project's existing documentation style and conventions
-- If the project has no inline docs convention, use minimal JSDoc/docstrings only on public APIs
-- Do NOT modify any behavior — documentation only
+- Keep docs DRY — don't repeat what the code already says
+- Match existing documentation style and tone
+- Use concrete examples, not abstract descriptions
+- If the code says WHAT, the docs should say WHY
 ```
 
-### Agent 2: API Documentation (if new endpoints exist)
+Store the output as `$QUILL_OUTPUT`.
+
+## Step 5: Commit documentation changes
+
+1. Stage all documentation files changed by Quill:
+   ```bash
+   git add -A
+   ```
+2. Commit with a conventional message:
+   ```bash
+   git commit -m "docs({slug}): update documentation for {slug}"
+   ```
+
+## Step 6: Output summary
 
 ```
-You are generating API documentation for new endpoints.
+Documentation complete: {slug}
 
-Read these artifacts:
-- {folder}/{feature-slug}/plan/eng.md (API design section)
-- {folder}/{feature-slug}/implement/IMPLEMENT.md
+{$QUILL_OUTPUT summary — list of files updated and what changed}
 
-Find all new API endpoints/routes in the implemented files using Grep.
-
-For each endpoint, document:
-- Method and path
-- Request parameters/body with types
-- Response format with types
-- Error responses
-- Authentication requirements
-- Example request/response
-
-Check if the project has an existing API docs file or pattern (e.g., docs/api.md, swagger/openapi spec, README API section). If yes, extend it. If no, create `{folder}/{feature-slug}/implement/API.md`.
-
-Use the format that matches existing project conventions.
+Next: /rpi:archive {slug}
 ```
-
-### Agent 3: README & Changelog (unless both skipped)
-
-```
-You are updating project documentation for a completed feature.
-
-Read these artifacts:
-- {folder}/{feature-slug}/REQUEST.md (feature summary)
-- {folder}/{feature-slug}/implement/IMPLEMENT.md (what was built, deviations)
-- {folder}/{feature-slug}/plan/eng.md (new dependencies, config)
-
-Tasks:
-
-1. README update (unless --skip-readme):
-   - Read the project's existing README.md
-   - Determine if the feature needs to be mentioned (new user-facing capability, new config, new dependency)
-   - If yes, add a concise entry in the appropriate section
-   - If the feature is purely internal/refactor, skip README update
-   - Do NOT rewrite the README — only add what's necessary
-
-2. Changelog entry (unless --skip-changelog):
-   - Check if CHANGELOG.md exists. If not, create it with Keep a Changelog format
-   - Add an entry under [Unreleased]:
-     - Added: new features
-     - Changed: modifications to existing features
-     - Fixed: bug fixes
-   - Keep entries concise — one line per change
-   - Reference the feature slug for traceability
-```
-
-## 6. Write DOCS.md summary
-
-After all agents complete, write `{folder}/{feature-slug}/implement/DOCS.md`:
-
-```markdown
-# Documentation: {Feature Title}
-
-Generated: {timestamp}
-
-## Inline Documentation
-- Files documented: {N}
-- Public APIs documented: {list}
-{Or: "Skipped (--skip-inline)"}
-
-## API Documentation
-- New endpoints: {N}
-- Docs location: {path}
-{Or: "No new endpoints"}
-
-## README
-- Updated: yes/no
-- Changes: {brief description}
-{Or: "Skipped (--skip-readme)"}
-
-## Changelog
-- Entry added: yes/no
-- Section: Added/Changed/Fixed
-{Or: "Skipped (--skip-changelog)"}
-```
-
-## 7. Present result
-
-Output:
-```
-Documentation complete for {feature-slug}:
-- Inline docs: {N} files documented
-- API docs: {endpoint count or "none"}
-- README: {updated or skipped}
-- Changelog: {entry added or skipped}
-
-Feature {feature-slug} is fully complete.
-All artifacts: {folder}/{feature-slug}/
-```
-
-</process>
