@@ -1,7 +1,7 @@
 {
   "name": "rpi-kit",
-  "version": "1.4.1",
-  "description": "Research → Plan → Implement. A systematic feature development workflow for Claude Code.",
+  "version": "2.0.0",
+  "description": "Research → Plan → Implement. AI-assisted feature development with 13 named agents, delta specs, and knowledge compounding.",
   "license": "MIT",
   "author": "Daniel Mendes",
   "repository": {
