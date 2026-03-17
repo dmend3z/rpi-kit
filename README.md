@@ -37,7 +37,7 @@ Use `/rpi <feature>` to auto-detect the current phase and progress to the next o
 
 | Command | Description |
 |---------|-------------|
-| `/rpi <feature>` | Auto-flow -- detects current phase and runs the next one |
+| `/rpi <feature>` | Auto-progress to next phase -- detects current state and runs the appropriate step |
 | `/rpi:new <feature>` | Interactive interview with Luna to create REQUEST.md |
 | `/rpi:research <feature>` | Codebase analysis (Atlas) + technical investigation (Scout) |
 | `/rpi:plan <feature>` | Architecture (Mestre) + product spec (Clara) + UX (Pixel) |
@@ -47,7 +47,7 @@ Use `/rpi <feature>` to auto-detect the current phase and progress to the next o
 | `/rpi:docs <feature>` | Generate documentation from artifacts (Quill) |
 | `/rpi:init` | Configure RPIKit and generate `rpi/context.md` |
 | `/rpi:status` | Show all features and their current phase |
-| `/rpi:party <topic>` | Multi-agent debate facilitated by Nexus |
+| `/rpi:party <topic>` | Multi-agent debate on any topic |
 | `/rpi:learn` | Save a solution or insight to the knowledge base |
 | `/rpi:archive <feature>` | Merge delta specs into `rpi/specs/` and clean up |
 | `/rpi:onboarding` | Guided first-time setup with codebase analysis |

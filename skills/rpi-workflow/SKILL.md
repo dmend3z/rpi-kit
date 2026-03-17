@@ -126,7 +126,7 @@ Files: {list}
 
 ## Party Mode
 
-`/rpi:party "topic"` -- multi-agent debate facilitated by Nexus.
+`/rpi:party "topic"` -- multi-agent debate on any topic.
 
 ```
 /rpi:party "GraphQL vs REST for the API?"
@@ -146,7 +146,7 @@ Output is saved to `rpi/solutions/decisions/` when requested.
 ```
 /rpi:init       -- configure RPIKit + generate context.md
 /rpi:status     -- view all features and their current phase
-/rpi:party      -- multi-agent debate
+/rpi:party      -- multi-agent debate on any topic
 /rpi:learn      -- manually capture a solution/insight
 /rpi:archive    -- merge delta into specs, delete feature folder
 /rpi:onboarding -- first-time setup, analyzes codebase, guides the user
