@@ -9,27 +9,28 @@ const RESET = "\x1b[0m";
 
 const steps = [
   {
-    title: "Welcome to RPIKit",
+    title: "Welcome to RPIKit v2",
     body: `
 ${BOLD}Research → Plan → Implement${RESET}
 
-RPIKit is a structured feature development workflow for Claude Code and Codex.
-It guides you through 3 phases with validation gates, so you research before
-you plan, and plan before you code.
+RPIKit v2 is a structured feature development workflow for Claude Code and Codex.
+It guides you through ${CYAN}7 phases${RESET} with validation gates, delta specs, and
+knowledge compounding — so you research before you plan, and plan before you code.
 
-${DIM}12 specialized agents simulate a product team:
-engineers, PMs, designers, reviewers — all working in parallel.${RESET}`,
+${DIM}13 named agents simulate a product team:
+Luna (PM), Atlas (Architect), Scout (Researcher), Forge (Builder),
+Hawk (Reviewer), Shield (QA), Quill (Doc Writer), and more.${RESET}`,
   },
   {
-    title: "The Pipeline",
+    title: "The 7-Phase Pipeline",
     body: `
-${DIM}Your feature flows through these phases:${RESET}
+${DIM}Your feature flows through 7 phases:${RESET}
 
   ${CYAN}/rpi:new${RESET}        Describe your feature → ${BOLD}REQUEST.md${RESET}
        │
   ${CYAN}/rpi:research${RESET}   Parallel agent analysis → ${BOLD}RESEARCH.md${RESET} + GO/NO-GO
        │
-  ${CYAN}/rpi:plan${RESET}       Generate specs + tasks → ${BOLD}PLAN.md${RESET} + eng/pm/ux.md
+  ${CYAN}/rpi:plan${RESET}       Generate delta specs + tasks → ${BOLD}PLAN.md${RESET} + eng/pm/ux.md
        │
   ${CYAN}/rpi:implement${RESET}  Execute tasks with tracking → ${BOLD}IMPLEMENT.md${RESET}
        │
@@ -37,25 +38,34 @@ ${DIM}Your feature flows through these phases:${RESET}
        │
   ${CYAN}/rpi:review${RESET}     Review against plan → PASS / FAIL
        │
-  ${CYAN}/rpi:docs${RESET}       Document the code → inline docs + changelog`,
+  ${CYAN}/rpi:docs${RESET}       Document the code → ${BOLD}DOCS.md${RESET} + changelog
+
+${DIM}Plus: /rpi:learn for knowledge compounding, /rpi:archive to wrap up.${RESET}`,
   },
   {
-    title: "Research Tiers",
+    title: "Key v2 Concepts",
     body: `
-${DIM}Control depth and cost with tier flags:${RESET}
+${BOLD}Delta Specs${RESET}
+${DIM}Specs capture system state. Features only record what changes:${RESET}
+  rpi/specs/              ${DIM}Source of truth${RESET}
+  rpi/features/{slug}/delta/
+    ├── ADDED/            ${DIM}New spec files${RESET}
+    ├── MODIFIED/         ${DIM}Changes to existing specs${RESET}
+    └── REMOVED/          ${DIM}Specs being deleted${RESET}
 
-  ${GREEN}--quick${RESET}      2 agents    Fast feasibility check
-  ${YELLOW}--standard${RESET}   4 agents    Scope + technical approach ${DIM}(default)${RESET}
-  ${CYAN}--deep${RESET}       6 agents    Full strategic analysis
+${BOLD}Knowledge Compounding${RESET}
+${DIM}A persistent knowledge base that grows with every feature:${RESET}
+  ${CYAN}/rpi:learn${RESET}             ${DIM}Manually capture lessons${RESET}
+  ${CYAN}/rpi:archive${RESET}           ${DIM}Merge delta into specs, clean up${RESET}
 
-${DIM}Agents run in parallel — deep research doesn't mean slow research.${RESET}`,
+${DIM}Scout checks past solutions before external research.${RESET}`,
   },
   {
     title: "Feature Folder Structure",
     body: `
 ${DIM}Each feature gets its own folder with all artifacts:${RESET}
 
-  rpi/
+  rpi/features/
   └── ${BOLD}your-feature/${RESET}
       ├── REQUEST.md              ${DIM}What and why${RESET}
       ├── research/
@@ -65,24 +75,32 @@ ${DIM}Each feature gets its own folder with all artifacts:${RESET}
       │   ├── eng.md              ${DIM}Technical spec${RESET}
       │   ├── pm.md               ${DIM}Product requirements${RESET}
       │   └── ux.md               ${DIM}UX design${RESET}
+      ├── delta/                  ${DIM}What changes (specs diff)${RESET}
+      │   ├── ADDED/
+      │   ├── MODIFIED/
+      │   └── REMOVED/
       └── implement/
           ├── IMPLEMENT.md        ${DIM}Execution audit trail${RESET}
           └── DOCS.md             ${DIM}Documentation summary${RESET}`,
   },
   {
-    title: "TDD Support",
+    title: "Quick Flow & Flags",
     body: `
-${DIM}RPIKit supports strict Test-Driven Development per task:${RESET}
+${BOLD}Quick Flow${RESET} ${DIM}— for small features${RESET}
 
-  ${CYAN}RED${RESET}      → Write one failing test
-  ${GREEN}GREEN${RESET}    → Write minimal code to pass
-  ${YELLOW}REFACTOR${RESET} → Clean up, re-run tests
+  ${CYAN}/rpi:new my-feature --quick${RESET}
 
-${DIM}Enable in .rpi.yaml:${RESET}
-  tdd: true
-  test_runner: auto
+  Luna asks 1-2 questions → compact REQUEST.md → Forge implements
+  directly with a mini-plan (3-5 tasks). Skips research and full plan.
 
-${DIM}Or run standalone:${RESET}  /rpi:test your-feature --task 1.2`,
+${BOLD}Global Flags${RESET}
+
+  ${GREEN}--quick${RESET}          Skip research + full plan
+  ${YELLOW}--force${RESET}          Re-run a phase even if artifacts exist
+  ${CYAN}--skip=phase${RESET}     Skip specific phase(s)
+  ${CYAN}--from=phase${RESET}     Start from a specific phase
+
+${DIM}TDD is also supported — enable in .rpi.yaml with tdd: true${RESET}`,
   },
   {
     title: "Get Started",

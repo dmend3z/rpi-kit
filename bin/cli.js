@@ -89,7 +89,10 @@ function uninstallClaude() {
 
 function printHelp() {
   console.log(`
-RPIKit — Research → Plan → Implement
+RPIKit v2 — Research → Plan → Implement
+
+  7-phase workflow with 13 named agents, delta specs,
+  and knowledge compounding for AI-assisted feature development.
 
 Usage:
   rpi-kit install            Interactive setup for AI tools
@@ -100,14 +103,28 @@ Usage:
   rpi-kit onboarding         Interactive walkthrough of the workflow
   rpi-kit help               Show this help
 
-After install, use in Claude Code or Gemini CLI:
-  /rpi:init                  Configure for your project
-  /rpi:new <feature>         Start a new feature
-  /rpi:research <feature>    Research feasibility
-  /rpi:plan <feature>        Generate implementation plan
-  /rpi:implement <feature>   Build it
-  /rpi:docs <feature>        Document the code
-  /rpi:status                Show all features
+Commands (14):
+  /rpi:new <feature>         Describe your feature → REQUEST.md
+  /rpi:research <feature>    Parallel agent analysis → RESEARCH.md
+  /rpi:plan <feature>        Generate specs + tasks → PLAN.md
+  /rpi:implement <feature>   Execute tasks with tracking → IMPLEMENT.md
+  /rpi:simplify <feature>    Code quality checks → auto-fix issues
+  /rpi:review <feature>      Review against plan → PASS / FAIL
+  /rpi:docs <feature>        Document the code → DOCS.md + changelog
+
+  /rpi:init                  Configure RPIKit for your project
+  /rpi:status                Show all features and their phases
+  /rpi:rpi                   Quick project status overview
+  /rpi:onboarding            Guided first-time setup
+  /rpi:learn <feature>       Extract lessons for knowledge compounding
+  /rpi:archive <feature>     Archive a completed feature
+  /rpi:party                 Celebrate a shipped feature
+
+Agents (13):
+  Luna (PM) · Atlas (Architect) · Scout (Researcher) · Nexus (Integrator)
+  Mestre (Lead) · Clara (Simplifier) · Pixel (UX) · Forge (Builder)
+  Sage (Advisor) · Razor (Optimizer) · Hawk (Reviewer) · Shield (QA)
+  Quill (Doc Writer)
 `);
 }
 
