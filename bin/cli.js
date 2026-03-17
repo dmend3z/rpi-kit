@@ -51,7 +51,7 @@ function installCodex() {
 
   if (fs.existsSync(dest)) {
     const existing = fs.readFileSync(dest, "utf8");
-    if (existing.includes("RPI Agent Definitions")) {
+    if (existing.includes("RPIKit Agents")) {
       log("Codex: AGENTS.md already contains RPI definitions.");
       return true;
     }

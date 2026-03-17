@@ -76,12 +76,12 @@ describe("rpi-kit install --codex", () => {
     assert.ok(fs.existsSync(dest), "AGENTS.md should exist in target dir");
 
     const content = fs.readFileSync(dest, "utf8");
-    assert.match(content, /RPI Agent Definitions/);
+    assert.match(content, /RPIKit Agents/);
   });
 
   it("skips if AGENTS.md already has RPI definitions", () => {
     const dest = path.join(tmpDir, "AGENTS.md");
-    fs.writeFileSync(dest, "# RPI Agent Definitions\nExisting content");
+    fs.writeFileSync(dest, "# RPIKit Agents\nExisting content");
 
     const output = execFileSync("node", [CLI, "install", "--codex"], {
       encoding: "utf8",
@@ -104,7 +104,7 @@ describe("rpi-kit install --codex", () => {
 
     const content = fs.readFileSync(dest, "utf8");
     assert.match(content, /My Agents/);
-    assert.match(content, /RPI Agent Definitions/);
+    assert.match(content, /RPIKit Agents/);
   });
 });
 
