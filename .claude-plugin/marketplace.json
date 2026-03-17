@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "rpi-kit",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Research → Plan → Implement. 7-phase pipeline with 13 named agents, delta specs, party mode, and knowledge compounding.",
   "owner": {
     "name": "Daniel Mendes"
@@ -11,7 +11,7 @@
       "name": "rpi-kit",
       "source": "./",
       "description": "Research → Plan → Implement. 7-phase pipeline with 13 named agents, delta specs, party mode, and knowledge compounding.",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "Daniel Mendes"
       },
@@ -19,7 +19,7 @@
       "keywords": ["workflow", "research", "planning", "implementation", "agents", "delta-specs", "knowledge-compounding"],
       "category": "productivity",
       "agents": 13,
-      "commands": 14,
+      "commands": 15,
       "skills": 2
     }
   ]

@@ -32,15 +32,36 @@ function hasGeminiCLI() {
 
 function installClaude() {
   log("Installing RPIKit for Claude Code...");
+
+  // 1. Ensure marketplace is registered
+  const listResult = spawnSync("claude", ["plugin", "marketplace", "list"], { encoding: "utf8", stdio: "pipe" });
+  const hasMarketplace = (listResult.stdout || "").includes("rpi-kit");
+
+  if (!hasMarketplace) {
+    log("Adding rpi-kit marketplace...");
+    try {
+      execFileSync("claude", ["plugin", "marketplace", "add", "dmend3z/rpi-kit"], {
+        stdio: silent ? "pipe" : "inherit",
+      });
+    } catch {
+      log("Could not add marketplace. Add manually:");
+      log("  claude plugin marketplace add dmend3z/rpi-kit");
+      return false;
+    }
+  }
+
+  // 2. Install plugin from marketplace
   try {
-    execFileSync("claude", ["plugin", "install", PLUGIN_DIR], {
+    execFileSync("claude", ["plugin", "install", "rpi-kit"], {
       stdio: silent ? "pipe" : "inherit",
     });
     log("Claude Code: installed.");
     return true;
   } catch {
-    log("Claude Code: could not register plugin automatically.");
-    log("  Manual install: claude plugin install " + PLUGIN_DIR);
+    log("Claude Code: could not install plugin.");
+    log("  Manual install:");
+    log("    claude plugin marketplace add dmend3z/rpi-kit");
+    log("    claude plugin install rpi-kit");
     return false;
   }
 }
