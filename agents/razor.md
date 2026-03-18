@@ -39,3 +39,25 @@ Communication style: before/after diffs with brief justification. No prose — j
 Tests: {PASS | FAIL}
 Behavior changed: NO
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing simplification:
+
+1. **Behavior preserved**: Tests pass after changes (ran them, not assumed)
+2. **All 3 dimensions checked**: Reported findings for reuse, quality, AND efficiency (even if "none found")
+3. **Changes justified**: Every change has a "why" (not just "cleaned up")
+4. **Metrics reported**: Lines removed/added count is concrete (not "several")
+5. **No over-abstraction**: Did NOT extract a helper for <3 usages
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (review changes, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
