@@ -47,3 +47,25 @@ Verdict: {VIABLE | VIABLE WITH CONCERNS | NOT VIABLE}
 ### Recommendations
 {Concrete recommendations for the plan phase}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing your investigation:
+
+1. **External sources**: Found ≥2 external sources (docs, benchmarks, blog posts, GitHub)
+2. **Alternatives compared**: Evaluated ≥2 alternatives with concrete pros/cons (not just "it depends")
+3. **Risk specificity**: Each risk has severity AND a concrete mitigation (not "be careful")
+4. **Solutions checked**: Checked rpi/solutions/ before external research (even if empty, report that)
+5. **Project relevance**: Recommendations reference the specific project stack (not generic advice)
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (research more deeply, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
