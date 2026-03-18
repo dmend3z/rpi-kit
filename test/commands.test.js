@@ -393,4 +393,46 @@ describe("RPIKit v2 — Cross-references", () => {
     assert.match(content, /max.*3|maximum.*3|3 tasks/i, "fix.md should enforce 3-task limit");
     assert.match(content, /ACTIVITY\.md/i, "fix.md should reference ACTIVITY.md for logging");
   });
+
+  it("phase commands reference DECISIONS.md for consolidation", () => {
+    const phaseCommands = [
+      "research",
+      "plan",
+      "implement",
+      "simplify",
+      "review",
+      "docs",
+    ];
+
+    for (const cmd of phaseCommands) {
+      const filePath = path.join(COMMANDS_DIR, `${cmd}.md`);
+      if (!fs.existsSync(filePath)) {
+        assert.fail(`${cmd}.md does not exist`);
+      }
+      const content = fs.readFileSync(filePath, "utf8");
+      assert.match(
+        content,
+        /DECISIONS\.md/i,
+        `${cmd}.md should reference DECISIONS.md for decision consolidation`
+      );
+    }
+  });
+
+  it("status command references DECISIONS.md for Key Decisions", () => {
+    const filePath = path.join(COMMANDS_DIR, "status.md");
+    if (!fs.existsSync(filePath)) {
+      assert.fail("status.md does not exist");
+    }
+    const content = fs.readFileSync(filePath, "utf8");
+    assert.match(
+      content,
+      /DECISIONS\.md/i,
+      "status.md should reference DECISIONS.md"
+    );
+    assert.match(
+      content,
+      /Key Decisions/i,
+      "status.md should have a Key Decisions section"
+    );
+  });
 });
