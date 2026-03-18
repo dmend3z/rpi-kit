@@ -182,6 +182,33 @@ Return the compiled interview content.
 
 Store the output as `$INTERVIEW`.
 
+## Step 8: Write INTERVIEW.md
+
+1. Ensure directory exists: `rpi/features/{slug}/plan/`
+2. Write `rpi/features/{slug}/plan/INTERVIEW.md` with `$INTERVIEW` content, using this format:
+
+```markdown
+# Interview: {Feature Name}
+Date: {current date}
+Complexity: {$COMPLEXITY}
+Questions: {N asked} / {$INTERVIEW_DEPTH planned}
+
+{$INTERVIEW content organized by category:
+- Technical Decisions (Q&A pairs with impact notes)
+- Scope Boundaries (Q&A pairs with impact notes)
+- Trade-offs (Q&A pairs with impact notes)
+- Key Constraints Identified
+- Open Items (flagged for agents)}
+
+## Resolved Contradictions
+(Populated by Step 14-15)
+```
+
+3. Output to user:
+   ```
+   Interview saved: rpi/features/{slug}/plan/INTERVIEW.md ({N} questions)
+   ```
+
 ## Step 6: Launch Mestre — first pass (eng.md)
 
 Launch Mestre agent with this prompt:
