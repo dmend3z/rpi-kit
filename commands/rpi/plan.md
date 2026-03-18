@@ -418,51 +418,95 @@ Output the list of delta specs you will create, with their paths:
 Then write each spec file.
 ```
 
-## Step 11: Launch Nexus — coherence validation
+## Step 14: Launch Nexus — adversarial review + developer resolution
 
-Launch Nexus agent to validate coherence across all plan outputs:
+Launch Nexus agent to perform adversarial review of all plan artifacts:
 
 ```
-You are Nexus. Validate coherence for feature: {slug}
+You are Nexus. You are performing ADVERSARIAL REVIEW of the plan
+artifacts for feature: {slug}
 
-## Engineering Specification (Mestre)
+Your mandate: You MUST find problems. "Looks good" is NOT acceptable.
+If you cannot find real issues, you must document WHY the plan is
+unusually solid — but never rubber-stamp.
+
+## Artifacts to Review
+### Engineering Specification (Mestre)
 {$ENG_OUTPUT}
 
-## Product Specification (Clara)
+### Product Specification (Clara)
 {$PM_OUTPUT}
 
-## Implementation Plan (Mestre)
-{$PLAN_OUTPUT}
-
-## UX Specification (Pixel)
+### UX Specification (Pixel)
 {$UX_OUTPUT}
 
-Your task:
-1. Check that every must-have requirement from Clara's pm.md has at least one task in PLAN.md
-2. Check that every file in Mestre's eng.md appears in at least one PLAN.md task
-3. Check that no PLAN.md task contradicts Clara's out-of-scope items
-4. If Pixel's ux.md exists: check that UI flows have corresponding tasks
-5. Flag any gaps, contradictions, or missing coverage
+### Implementation Plan (Mestre)
+{$PLAN_OUTPUT}
 
-Output as: [Nexus -- Coherence Validation]
+### Developer Interview
+{$INTERVIEW}
 
-## Coherence Status
-{PASS | PASS with gaps | FAIL}
+### Original Request
+{$REQUEST}
 
-## Coverage
-- Requirements covered: {N}/{total}
-- Files covered: {N}/{total}
+### Research Findings
+{$RESEARCH}
 
-## Issues Found
-- {issue description} — Severity: {HIGH | MEDIUM | LOW}
-(or "No issues found.")
+## Adversarial Analysis Protocol
 
-## Recommendations
-- {recommendation}
-(or "Plan is coherent. Ready for implementation.")
+### Pass 1: Cross-Artifact Contradictions
+Check every pair of artifacts for conflicts:
+- eng.md vs pm.md: Do technical decisions satisfy all acceptance criteria?
+- eng.md vs ux.md: Does the architecture support all UI states/flows?
+- pm.md vs PLAN.md: Does every must-have requirement have tasks?
+- pm.md scope vs PLAN.md tasks: Are out-of-scope items sneaking in?
+- PLAN.md vs INTERVIEW.md: Do tasks reflect developer's stated preferences?
+
+### Pass 2: Assumption Challenges
+For each major decision in eng.md, ask:
+- "What if this assumption is wrong?"
+- "What's the blast radius if this fails?"
+- "Is there a simpler approach nobody considered?"
+
+### Pass 3: Coverage Gaps
+- Requirements without tasks
+- Tasks without test criteria
+- Files mentioned but not in any task
+- UI states without error handling
+- Happy path only (missing edge cases)
+
+### Pass 4: Hidden Complexity
+- Tasks estimated as S that touch >3 files
+- Dependencies that create serial bottlenecks
+- Integration points without error handling
+- Data migrations without rollback plan
+
+### Pass 5: REQUEST Drift
+- Compare final PLAN.md against original REQUEST.md
+- Has scope crept? Has the core problem shifted?
+- Would the developer recognize this as what they asked for?
+
+## Output Format
+For each issue found, output using your [Nexus — Adversarial Review] format.
+
+## Developer Resolution Protocol
+After completing all passes:
+1. Count issues by severity
+2. CRITICAL issues: present one at a time via AskUserQuestion with suggested resolutions as options
+3. HIGH issues: present as batch via AskUserQuestion, let developer pick which to address
+4. MEDIUM/LOW issues: present summary, developer can dismiss or address
+5. For each resolved issue: note the chosen resolution and which artifacts need patching
+6. Return the full adversarial review with all resolutions noted
 ```
 
-If Nexus reports FAIL: output the issues to the user and suggest re-running `/rpi:plan {slug} --force`.
+Store the output as `$ADVERSARIAL_REVIEW`.
+
+If Nexus found CRITICAL issues that the developer could not resolve:
+```
+Adversarial review found unresolvable issues. Consider re-running:
+/rpi:plan {slug} --force
+```
+Stop.
 
 ## Step 12: Write all artifacts
 
