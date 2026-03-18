@@ -153,26 +153,51 @@ function findInstalledPlugin() {
 }
 
 function updatePlugin() {
-  const result = findInstalledPlugin();
-  if (!result) {
-    log("RPIKit installation not found in ~/.claude/plugins/.");
-    log("Install first: claude plugin install rpi-kit");
-    return false;
+  log("Updating RPIKit for all detected tools...\n");
+
+  let updated = false;
+
+  // 1. Claude Code
+  if (hasClaude()) {
+    log("── Claude Code ──");
+    const result = findInstalledPlugin();
+    if (result) {
+      const { dir: pluginDir, type: installType } = result;
+      let currentVersion = "unknown";
+      try {
+        const pj = JSON.parse(fs.readFileSync(path.join(pluginDir, ".claude-plugin", "plugin.json"), "utf8"));
+        currentVersion = pj.version || "unknown";
+      } catch {}
+      if (installType === "npm") {
+        updated = updateNpmPlugin(pluginDir, currentVersion) || updated;
+      } else {
+        updated = updateGitPlugin(pluginDir, currentVersion) || updated;
+      }
+    } else {
+      log("Not installed. Run: rpi-kit install --claude");
+    }
+    log("");
   }
 
-  const { dir: pluginDir, type: installType } = result;
-
-  // Current version
-  let currentVersion = "unknown";
-  try {
-    const pj = JSON.parse(fs.readFileSync(path.join(pluginDir, ".claude-plugin", "plugin.json"), "utf8"));
-    currentVersion = pj.version || "unknown";
-  } catch {}
-
-  if (installType === "npm") {
-    return updateNpmPlugin(pluginDir, currentVersion);
+  // 2. Codex
+  if (hasCodex()) {
+    log("── Codex ──");
+    updated = installCodex() || updated;
+    log("");
   }
-  return updateGitPlugin(pluginDir, currentVersion);
+
+  // 3. Gemini CLI
+  if (hasGeminiCLI()) {
+    log("── Gemini CLI ──");
+    updated = installGeminiCLI() || updated;
+    log("");
+  }
+
+  if (!updated) {
+    log("No tools detected. Install first: rpi-kit install");
+  }
+
+  return updated;
 }
 
 function updateNpmPlugin(pluginDir, currentVersion) {
@@ -311,8 +336,9 @@ Usage:
   rpi-kit onboarding         Interactive walkthrough of the workflow
   rpi-kit help               Show this help
 
-Commands (17):
+Commands (18):
   /rpi:new <feature>         Describe your feature → REQUEST.md
+  /rpi:fix <bug>             Quick bugfix — interview, plan, implement in one step
   /rpi:research <feature>    Parallel agent analysis → RESEARCH.md
   /rpi:plan <feature>        Generate specs + tasks → PLAN.md
   /rpi:implement <feature>   Execute tasks with tracking → IMPLEMENT.md

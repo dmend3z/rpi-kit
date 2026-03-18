@@ -7,6 +7,7 @@
 - **TOML Commands**: Automatically generated 18 commands in `.gemini/commands/rpi/` for Gemini CLI.
 - **Self-Installation**: Updated `bin/cli.js` to support automatic extension linking via `rpi-kit install --gemini`.
 - **NPM Package**: Updated `files` in `package.json` to include `.gemini/` directory for npm distribution.
+- **Multi-tool Update**: `rpi-kit update` now updates all detected tools (Claude Code, Codex, Gemini CLI) in one command.
 
 ## [2.4.0] - 2026-03-18
 

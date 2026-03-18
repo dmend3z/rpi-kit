@@ -1,6 +1,6 @@
 {
   "name": "rpi-kit",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Research → Plan → Implement. 7-phase pipeline with 13 named agents, delta specs, party mode, and knowledge compounding.",
   "author": {
     "name": "Daniel Mendes",
