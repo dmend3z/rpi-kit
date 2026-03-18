@@ -74,6 +74,11 @@ For each feature:
 - Identify any WEAK or FAIL scores for alerts.
 - Extract last activity timestamp for "last activity" display.
 
+### Decisions
+- Read `{feature_dir}/DECISIONS.md` if it exists.
+- Count total decisions, count by impact (HIGH, MEDIUM, LOW).
+- Extract the last 5 decisions (most recent = bottom of the file).
+
 ## Step 5: Display status
 
 ### If no specific feature requested (overview mode)
@@ -89,6 +94,7 @@ Verdict: {verdict}
 Complexity: {complexity}
 Last activity: {relative time, e.g. "2h ago" or "3 days ago"}
 Quality: {phase_quality_summary, e.g. "Research PASS | Plan PASS | Implement 3/7"}
+Decisions: {total} ({HIGH_count} HIGH, {MEDIUM_count} MEDIUM, {LOW_count} LOW)
 
 ## {feature-slug-2}
 Phase: {phase}
@@ -96,6 +102,7 @@ Verdict: {verdict}
 Complexity: {complexity}
 Last activity: {relative time, e.g. "2h ago" or "3 days ago"}
 Quality: {phase_quality_summary, e.g. "Research PASS | Plan PASS | Implement 3/7"}
+Decisions: {total} ({HIGH_count} HIGH, {MEDIUM_count} MEDIUM, {LOW_count} LOW)
 
 ---
 {total_count} feature(s) active
@@ -145,6 +152,7 @@ Complexity: {complexity}
 - plan/pm.md: {exists/missing}
 - plan/ux.md: {exists/missing}
 - implement/IMPLEMENT.md: {exists/missing}
+- DECISIONS.md: {exists/missing}
 - delta/: {count of files in ADDED + MODIFIED + REMOVED}
 
 ## Tasks
@@ -159,6 +167,17 @@ Complexity: {complexity}
 ## Activity Log (last 5 entries)
 {If ACTIVITY.md exists, show last 5 entries in reverse chronological order}
 {If no ACTIVITY.md: "No activity log yet."}
+
+## Key Decisions (last 5)
+{If DECISIONS.md exists:}
+| # | Phase | Decision | Impact |
+|---|-------|----------|--------|
+| {N} | {phase} | {summary} | {impact} |
+
+Total: {N} decisions ({HIGH_count} HIGH, {MEDIUM_count} MEDIUM, {LOW_count} LOW)
+Full log: rpi/features/{slug}/DECISIONS.md
+
+{If no DECISIONS.md: "No decisions logged yet."}
 
 ## Quality Summary
 {For each completed phase, show quality scores:}
