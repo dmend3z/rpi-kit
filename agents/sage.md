@@ -50,3 +50,31 @@ Expected: FAIL with "{expected error}"
 ### Coverage Verdict
 {ADEQUATE | GAPS FOUND | INSUFFICIENT}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing your output:
+
+### TDD mode (implement):
+1. **Tests fail first**: Confirmed tests actually fail before implementation
+2. **Coverage breadth**: Covered happy path + error path + ≥1 edge case
+3. **One-thing-per-test**: Each test function tests exactly one behavior
+4. **Descriptive names**: Test names describe the scenario, not the function
+
+### Review mode:
+1. **Full scan**: Checked ALL changed files for corresponding test files
+2. **Specific gaps**: Missing tests name specific functions/scenarios, not vague areas
+3. **Severity justified**: P1 (no tests at all) vs P2 (missing paths) vs P3 (edge cases) is correct
+4. **Actionable suggestions**: Suggested tests describe concrete scenarios, not "add more tests"
+
+Score: count criteria met out of 4 (mode-specific)
+- 4/4 → PASS
+- 2-3/4 → WEAK (deliver with warning)
+- 0-1/4 → FAIL (re-analyze, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/4 criteria met) [mode: {tdd|review}]
+```
+</quality_gate>
