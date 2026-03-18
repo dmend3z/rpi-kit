@@ -81,6 +81,7 @@ Your task:
 ### {current_date} — Atlas (Research)
 - **Action:** Codebase analysis for {slug}
 - **Scope:** {list files you actually read}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Patterns found:** {count and summary}
 - **Quality:** {your quality gate result}
 ```
@@ -113,6 +114,7 @@ Your task:
 
 ### {current_date} — Scout (Research)
 - **Action:** External research for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Sources consulted:** {count and list}
 - **Recommendations:** {count and summary}
 - **Quality:** {your quality gate result}
@@ -216,6 +218,7 @@ After synthesis, append your activity to rpi/features/{slug}/ACTIVITY.md:
 
 ### {current_date} — Nexus (Research Synthesis)
 - **Action:** Synthesized Atlas + Scout findings for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Consensus points:** {count}
 - **Disagreements resolved:** {count}
 - **Quality:** {your quality gate result}
@@ -230,7 +233,27 @@ After synthesis, append your activity to rpi/features/{slug}/ACTIVITY.md:
    - Copy relevant spec baselines into `delta/MODIFIED/` so the plan phase has reference copies
    - This gives Mestre (plan phase) the current state of specs that will be changed
 
-## Step 9: Output summary
+## Step 9: Consolidate decisions to DECISIONS.md
+
+1. Read `rpi/features/{slug}/ACTIVITY.md`.
+2. Extract all `<decision>` tags from entries belonging to the Research phase (Atlas, Scout, Nexus entries from this run).
+3. If no decisions found, skip this step.
+4. Write `rpi/features/{slug}/DECISIONS.md`:
+
+```markdown
+# Decision Log — {slug}
+
+## Research Phase
+_Generated: {current_date}_
+
+| # | Type | Decision | Alternatives | Rationale | Impact |
+|---|------|----------|-------------|-----------|--------|
+| {N} | {type} | {summary} | {alternatives} | {rationale} | {impact} |
+```
+
+5. Number decisions sequentially starting from 1.
+
+## Step 10: Output summary
 
 ```
 Research complete: rpi/features/{slug}/research/RESEARCH.md
