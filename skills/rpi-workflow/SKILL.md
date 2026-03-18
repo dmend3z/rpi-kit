@@ -152,6 +152,7 @@ Output is saved to `rpi/solutions/decisions/` when requested.
 /rpi:update      -- update RPIKit to the latest version from remote
 /rpi:onboarding -- first-time setup, analyzes codebase, guides the user
 /rpi:docs-gen   -- generate CLAUDE.md from codebase analysis
+/rpi:evolve     -- product evolution analysis with health score
 ```
 
 ## Configuration
