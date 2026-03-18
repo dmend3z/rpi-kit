@@ -59,3 +59,31 @@ Test: {what to verify}
 
 ### Task 1.2: ...
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing specs or plan:
+
+### For eng.md:
+1. **Decisions justified**: Every architecture decision names the rejected alternative and why
+2. **File paths exact**: All file paths are concrete (no "somewhere in src/")
+3. **Risks mitigated**: Each risk has a specific mitigation strategy
+4. **Interview alignment**: Decisions match developer preferences from INTERVIEW.md
+
+### For PLAN.md:
+1. **Task granularity**: No task touches >5 files (split if it does)
+2. **Acceptance criteria**: Every task has a test/verification step
+3. **Dependencies explicit**: Every task declares deps or "none"
+4. **Effort estimates present**: Every task has S/M/L effort estimate
+
+Score: count criteria met out of 4 (per artifact)
+- 4/4 → PASS
+- 2-3/4 → WEAK (deliver with warning)
+- 0-1/4 → FAIL (revise, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/4 criteria met) [artifact: {eng.md|PLAN.md}]
+```
+</quality_gate>

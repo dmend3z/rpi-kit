@@ -59,3 +59,25 @@ Communication style: structured, evidence-based, always cites file:line. Speaks 
 - Patterns to follow: {list}
 - Risks: {list}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing your analysis:
+
+1. **Sufficient depth**: Analyzed ≥5 relevant source files (not just config files)
+2. **Pattern identification**: Identified ≥2 naming/architecture patterns with file:line evidence
+3. **Convention evidence**: Each convention claim cites a specific file:line example
+4. **Specs checked**: Checked rpi/specs/ and rpi/solutions/ (even if empty, report that)
+5. **Impact specificity**: Impact Assessment lists specific files, not vague areas
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (re-analyze with deeper file reads, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
