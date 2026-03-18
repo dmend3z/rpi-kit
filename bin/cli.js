@@ -102,18 +102,34 @@ function findInstalledPlugin() {
   ];
   for (const dir of searchDirs) {
     if (fs.existsSync(path.join(dir, ".claude-plugin", "plugin.json"))) {
-      return dir;
+      return { dir, type: "git" };
     }
+  }
+  // Check npm cache: ~/.claude/plugins/cache/rpi-kit/rpi-kit/{version}/
+  const cacheBase = path.join(home, ".claude", "plugins", "cache", "rpi-kit", "rpi-kit");
+  if (fs.existsSync(cacheBase)) {
+    try {
+      const versions = fs.readdirSync(cacheBase).filter(f => !f.startsWith("."));
+      if (versions.length > 0) {
+        // Pick the latest version directory
+        const latest = versions.sort().pop();
+        const dir = path.join(cacheBase, latest);
+        if (fs.existsSync(path.join(dir, ".claude-plugin", "plugin.json"))) {
+          return { dir, type: "npm" };
+        }
+      }
+    } catch {}
   }
   // Glob fallback
   const pluginsRoot = path.join(home, ".claude", "plugins");
   if (fs.existsSync(pluginsRoot)) {
-    const { execFileSync } = require("child_process");
     try {
-      const result = execFileSync("find", [pluginsRoot, "-path", "*/rpi-kit/.claude-plugin/plugin.json", "-maxdepth", 5], { encoding: "utf8" }).trim();
+      const result = execFileSync("find", [pluginsRoot, "-path", "*/rpi-kit/.claude-plugin/plugin.json", "-maxdepth", 6], { encoding: "utf8" }).trim();
       if (result) {
         const pluginJson = result.split("\n")[0];
-        return path.resolve(pluginJson, "..", "..");
+        const dir = path.resolve(pluginJson, "..", "..");
+        const isNpm = dir.includes(path.join("cache", "rpi-kit"));
+        return { dir, type: isNpm ? "npm" : "git" };
       }
     } catch {}
   }
@@ -121,21 +137,14 @@ function findInstalledPlugin() {
 }
 
 function updatePlugin() {
-  const pluginDir = findInstalledPlugin();
-  if (!pluginDir) {
+  const result = findInstalledPlugin();
+  if (!result) {
     log("RPIKit installation not found in ~/.claude/plugins/.");
     log("Install first: claude plugin install rpi-kit");
     return false;
   }
 
-  const gitDir = path.join(pluginDir, ".git");
-  if (!fs.existsSync(gitDir)) {
-    log("Installed plugin has no .git directory — cannot update via git pull.");
-    log("Re-install to enable updates:");
-    log("  claude plugin remove rpi-kit");
-    log("  claude plugin install git@github.com:dmend3z/rpi-kit.git");
-    return false;
-  }
+  const { dir: pluginDir, type: installType } = result;
 
   // Current version
   let currentVersion = "unknown";
@@ -143,6 +152,66 @@ function updatePlugin() {
     const pj = JSON.parse(fs.readFileSync(path.join(pluginDir, ".claude-plugin", "plugin.json"), "utf8"));
     currentVersion = pj.version || "unknown";
   } catch {}
+
+  if (installType === "npm") {
+    return updateNpmPlugin(pluginDir, currentVersion);
+  }
+  return updateGitPlugin(pluginDir, currentVersion);
+}
+
+function updateNpmPlugin(pluginDir, currentVersion) {
+  log(`Current: v${currentVersion} (npm)`);
+  log("Checking for updates...");
+
+  // Check latest version on npm
+  const npmView = spawnSync("npm", ["view", "rpi-kit", "version"], { encoding: "utf8", stdio: "pipe" });
+  const latestVersion = (npmView.stdout || "").trim();
+
+  if (!latestVersion) {
+    log("Could not check npm for latest version.");
+    log("Update manually:");
+    log("  claude plugin remove rpi-kit && claude plugin install rpi-kit");
+    return false;
+  }
+
+  if (latestVersion === currentVersion) {
+    log(`Already up to date (v${currentVersion}).`);
+    return true;
+  }
+
+  log(`Update available: v${currentVersion} → v${latestVersion}`);
+  log("Updating...");
+
+  // Remove old version
+  const remove = spawnSync("claude", ["plugin", "remove", "rpi-kit"], { encoding: "utf8", stdio: "pipe" });
+  if (remove.status !== 0) {
+    log("Could not remove current version. Update manually:");
+    log("  claude plugin remove rpi-kit && claude plugin install rpi-kit");
+    return false;
+  }
+
+  // Install new version
+  const install = spawnSync("claude", ["plugin", "install", "rpi-kit"], { encoding: "utf8", stdio: "pipe" });
+  if (install.status !== 0) {
+    log("Could not install new version. Install manually:");
+    log("  claude plugin install rpi-kit");
+    return false;
+  }
+
+  log(`\nv${currentVersion} → v${latestVersion}\n`);
+  log("Restart Claude Code to load the new version.");
+  return true;
+}
+
+function updateGitPlugin(pluginDir, currentVersion) {
+  const gitDir = path.join(pluginDir, ".git");
+  if (!fs.existsSync(gitDir)) {
+    log("Installed plugin has no .git directory — cannot update via git pull.");
+    log("Re-install to enable updates:");
+    log("  claude plugin remove rpi-kit");
+    log("  claude plugin install rpi-kit");
+    return false;
+  }
 
   const currentCommit = spawnSync("git", ["-C", pluginDir, "rev-parse", "--short", "HEAD"], { encoding: "utf8" });
   const oldCommit = (currentCommit.stdout || "").trim();
@@ -226,7 +295,7 @@ Usage:
   rpi-kit onboarding         Interactive walkthrough of the workflow
   rpi-kit help               Show this help
 
-Commands (15):
+Commands (17):
   /rpi:new <feature>         Describe your feature → REQUEST.md
   /rpi:research <feature>    Parallel agent analysis → RESEARCH.md
   /rpi:plan <feature>        Generate specs + tasks → PLAN.md
@@ -243,6 +312,8 @@ Commands (15):
   /rpi:learn [description]   Capture a solution to knowledge base
   /rpi:archive <feature>     Archive a completed feature
   /rpi:party                 Multi-agent debate on any topic
+  /rpi:docs-gen              Generate CLAUDE.md from codebase analysis
+  /rpi:evolve [--quick]      Product evolution analysis with health score
 
 Agents (13):
   Luna (Analyst) · Atlas (Explorer) · Scout (Researcher) · Nexus (Synthesizer)
