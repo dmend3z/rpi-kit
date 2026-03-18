@@ -1,6 +1,6 @@
 {
   "name": "rpi-kit",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Research → Plan → Implement. AI-assisted feature development with 13 named agents, delta specs, and knowledge compounding.",
   "license": "MIT",
   "author": "Daniel Mendes",
@@ -32,7 +32,8 @@
     "CHANGELOG.md",
     "README.md",
     "LICENSE",
-    "marketplace.json"
+    "marketplace.json",
+    "gemini-extension.json"
   ],
   "scripts": {
     "test": "node --test test/cli.test.js test/commands.test.js",

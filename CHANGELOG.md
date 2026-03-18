@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.5.1] - 2026-03-18
+
+### Fixed
+- Add `gemini-extension.json` manifest — fixes `gemini extensions link` failing with "Configuration file not found"
+- Include `gemini-extension.json` in npm package
+
 ## [2.5.0] - 2026-03-18
 
 ### Added
