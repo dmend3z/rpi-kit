@@ -77,6 +77,29 @@ Read `ux_agent` from `.rpi.yaml`:
 - If `never`: set `$RUN_PIXEL` to `false` regardless.
 - If `auto` (default): set `$RUN_PIXEL` to `$HAS_FRONTEND`.
 
+## Step 6: Assess complexity
+
+Analyze `$REQUEST` and `$RESEARCH` to determine interview depth.
+
+1. Count files mentioned in RESEARCH.md (file changes, affected components).
+2. Check if the feature involves new architecture (new system/service) vs modification of existing.
+3. Check if it spans multiple system layers (frontend + backend + database, or multiple services).
+4. Count open questions and risks flagged in RESEARCH.md.
+5. Determine complexity and interview depth:
+
+| Complexity | Files affected | Layers | Interview depth |
+|-----------|---------------|--------|----------------|
+| S | 1-3 | single | 3-4 questions |
+| M | 4-8 | 1-2 | 4-5 questions |
+| L | 9-15 | multiple | 5-6 questions |
+| XL | 16+ | cross-cutting | 6-8 questions |
+
+6. Store as `$COMPLEXITY` and `$INTERVIEW_DEPTH`.
+7. Output to user:
+   ```
+   Complexity: {$COMPLEXITY} — Interview depth: {$INTERVIEW_DEPTH} questions
+   ```
+
 ## Step 6: Launch Mestre — first pass (eng.md)
 
 Launch Mestre agent with this prompt:
