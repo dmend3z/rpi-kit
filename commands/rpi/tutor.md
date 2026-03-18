@@ -54,6 +54,8 @@ Stop.
 
 Check if `rpi/tutor-profile.yaml` exists.
 
+If the file exists, read and parse it. If `experience_level` or `history` fields are missing, or the file is not valid YAML, delete the file, inform the user ("Profile was corrupted. Starting fresh interview."), and proceed to Step 5.
+
 - **Exists + `--profile` flag:** proceed to Step 5 (re-interview, preserve history).
 - **Exists + no flag:** proceed to Step 6 (topic selection).
 - **Does not exist:** proceed to Step 5 (first-time interview).
@@ -189,7 +191,7 @@ Based on your recent work and profile, here are some topic suggestions:
 Which one?
 ```
 
-Store the user's choice as `$TOPIC`. Set `$TOPIC_MODE` to `suggested`.
+Store the user's choice as `$TOPIC`. If the user chose a suggested topic, set `$TOPIC_MODE` to `suggested`. If the user typed their own topic (option 3), set `$TOPIC_MODE` to `requested`.
 
 ## Step 7: Gather teaching context
 
@@ -216,7 +218,7 @@ You respect the developer's preferred explanation style and session length.
 You never assign exercises or quizzes — you explain, illustrate, and connect concepts.
 ```
 
-Generate a teaching explanation for `$TOPIC` using `$TEACHING_CONTEXT` and the profile's `experience_level`.
+Generate a teaching explanation for `$TOPIC` using `$TEACHING_CONTEXT` and the profile's `experience_level`. Check the profile's `known_patterns` field — if any overlap with `$TOPIC`, acknowledge them briefly and focus the explanation on what the developer does NOT already know.
 
 ### Depth guidelines
 
