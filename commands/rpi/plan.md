@@ -508,6 +508,26 @@ Adversarial review found unresolvable issues. Consider re-running:
 ```
 Stop.
 
+## Step 15: Nexus patches artifacts
+
+If `$ADVERSARIAL_REVIEW` contains resolved issues:
+
+1. For each resolved issue in `$ADVERSARIAL_REVIEW`:
+   - Identify which artifacts need changes (eng.md, pm.md, ux.md, PLAN.md)
+   - Apply surgical edits to `$ENG_OUTPUT`, `$PM_OUTPUT`, `$UX_OUTPUT`, or `$PLAN_OUTPUT` as needed
+   - Track the patch: add `<!-- Patched: {issue title} — {resolution chosen} -->` as comment near the change
+2. Update `$INTERVIEW` content: append resolved contradictions to the `## Resolved Contradictions` section:
+   ```
+   ### C{N}: {issue title}
+   **Severity:** {severity}
+   **Resolution:** {developer's chosen option}
+   **Artifacts patched:** {list of affected artifacts and sections}
+   ```
+3. Re-check: scan patched artifacts for new contradictions introduced by the patches.
+   - If new contradictions found: present to developer via AskUserQuestion and patch again.
+   - If clean: proceed.
+4. Update `rpi/features/{slug}/plan/INTERVIEW.md` with the patched version of `$INTERVIEW`.
+
 ## Step 12: Write all artifacts
 
 1. Ensure directory exists: `rpi/features/{slug}/plan/`
