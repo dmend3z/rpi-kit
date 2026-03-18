@@ -273,4 +273,50 @@ describe("RPIKit v2 — Cross-references", () => {
     assert.match(content, /ADDED/i, "plan.md should reference ADDED");
     assert.match(content, /MODIFIED/i, "plan.md should reference MODIFIED");
   });
+
+  it("plan command includes interview phase", () => {
+    const filePath = path.join(COMMANDS_DIR, "plan.md");
+    if (!fs.existsSync(filePath)) {
+      assert.fail("plan.md does not exist");
+    }
+    const content = fs.readFileSync(filePath, "utf8");
+    assert.match(
+      content,
+      /INTERVIEW/i,
+      "plan.md should reference INTERVIEW.md"
+    );
+    assert.match(
+      content,
+      /AskUserQuestion/i,
+      "plan.md should use AskUserQuestion for interview"
+    );
+    assert.match(
+      content,
+      /complexity/i,
+      "plan.md should assess complexity"
+    );
+  });
+
+  it("plan command includes adversarial review", () => {
+    const filePath = path.join(COMMANDS_DIR, "plan.md");
+    if (!fs.existsSync(filePath)) {
+      assert.fail("plan.md does not exist");
+    }
+    const content = fs.readFileSync(filePath, "utf8");
+    assert.match(
+      content,
+      /adversarial/i,
+      "plan.md should reference adversarial review"
+    );
+    assert.match(
+      content,
+      /contradiction/i,
+      "plan.md should check for contradictions"
+    );
+    assert.match(
+      content,
+      /CRITICAL|HIGH|MEDIUM|LOW/,
+      "plan.md should have severity levels"
+    );
+  });
 });
