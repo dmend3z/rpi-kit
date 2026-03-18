@@ -19,10 +19,7 @@ Personalized coding tutor that builds a developer profile, adapts to your experi
 
 ## Step 1: Load config
 
-Read `.rpi.yaml` from the project root. Extract:
-- `folder` (default: `rpi/features`)
-
-If `.rpi.yaml` doesn't exist, use defaults silently.
+Read `.rpi.yaml` from the project root. If it doesn't exist, use defaults silently.
 
 ## Step 2: Parse arguments
 
@@ -196,14 +193,7 @@ Store the user's choice as `$TOPIC`. Set `$TOPIC_MODE` to `suggested`.
 
 ## Step 7: Gather teaching context
 
-### Step 7a: Read profile
-
-Read `rpi/tutor-profile.yaml`. Extract:
-- `experience_level` — determines depth level
-- `known_patterns` — avoid re-explaining these unless directly relevant
-- `preferred_examples` — shapes how code is presented
-
-### Step 7b: Search codebase for topic-relevant code
+### Step 7a: Search codebase for topic-relevant code
 
 Use Glob and Grep to find files related to `$TOPIC`:
 
@@ -212,15 +202,6 @@ Use Glob and Grep to find files related to `$TOPIC`:
 3. Read the most relevant files (max 5) using Read.
 
 Store as `$TEACHING_CONTEXT` — the real code snippets, file paths, and line numbers that will be used in the explanation.
-
-### Step 7c: Select depth level
-
-Map `experience_level` to depth:
-- `junior` → **beginner**
-- `mid` → **intermediate**
-- `senior` → **advanced**
-
-Store as `$DEPTH`.
 
 ## Step 8: Teach
 
@@ -235,23 +216,23 @@ You respect the developer's preferred explanation style and session length.
 You never assign exercises or quizzes — you explain, illustrate, and connect concepts.
 ```
 
-Generate a teaching explanation for `$TOPIC` using `$TEACHING_CONTEXT` and `$DEPTH`.
+Generate a teaching explanation for `$TOPIC` using `$TEACHING_CONTEXT` and the profile's `experience_level`.
 
 ### Depth guidelines
 
-**Beginner** (junior):
+**junior:**
 - Explain foundational concepts step by step
 - Define terms before using them
 - Show simple examples first, then real code
 - Avoid jargon or explain it immediately
 
-**Intermediate** (mid):
+**mid:**
 - Assume fundamentals are known
 - Focus on patterns, trade-offs, and "why"
 - Show real code directly with annotations
 - Compare approaches
 
-**Advanced** (senior):
+**senior:**
 - Go straight to the point
 - Focus on edge cases, internals, and gotchas
 - Reference source code and implementation details
