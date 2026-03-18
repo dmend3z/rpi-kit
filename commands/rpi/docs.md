@@ -109,6 +109,14 @@ Rules:
 - Match existing documentation style and tone
 - Use concrete examples, not abstract descriptions
 - If the code says WHAT, the docs should say WHY
+
+After documentation updates, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Quill (Docs)
+- **Action:** Documentation updates for {slug}
+- **Files updated:** {list}
+- **Changelog entry:** {yes|no}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$QUILL_OUTPUT`.
