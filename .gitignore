@@ -9,6 +9,10 @@ node_modules/
 *.swo
 Thumbs.db
 .worktrees/
+.agent/
+.codex/
+.gemini/
+openspec/
 rpi/features/
 rpi/specs/
 rpi/solutions/
