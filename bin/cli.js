@@ -336,7 +336,7 @@ Usage:
   rpi-kit onboarding         Interactive walkthrough of the workflow
   rpi-kit help               Show this help
 
-Commands (18):
+Commands (19):
   /rpi:new <feature>         Describe your feature → REQUEST.md
   /rpi:fix <bug>             Quick bugfix — interview, plan, implement in one step
   /rpi:research <feature>    Parallel agent analysis → RESEARCH.md
@@ -356,6 +356,7 @@ Commands (18):
   /rpi:party                 Multi-agent debate on any topic
   /rpi:docs-gen              Generate CLAUDE.md from codebase analysis
   /rpi:evolve [--quick]      Product evolution analysis with health score
+  /rpi:tutor [topic]         Interactive coding tutor with adaptive profiling
 
 Agents (13):
   Luna (Analyst) · Atlas (Explorer) · Scout (Researcher) · Nexus (Synthesizer)

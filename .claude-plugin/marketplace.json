@@ -37,6 +37,7 @@
         "./commands/rpi/rpi.md",
         "./commands/rpi/simplify.md",
         "./commands/rpi/status.md",
+        "./commands/rpi/tutor.md",
         "./commands/rpi/update.md"
       ],
       "agents": [
