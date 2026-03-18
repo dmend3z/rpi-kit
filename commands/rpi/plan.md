@@ -209,7 +209,7 @@ Questions: {N asked} / {$INTERVIEW_DEPTH planned}
    Interview saved: rpi/features/{slug}/plan/INTERVIEW.md ({N} questions)
    ```
 
-## Step 6: Launch Mestre — first pass (eng.md)
+## Step 9: Launch Mestre — first pass (eng.md)
 
 Launch Mestre agent with this prompt:
 
@@ -228,6 +228,14 @@ You are Mestre. Generate the engineering specification for feature: {slug}
 ## Relevant Specs
 {$RELEVANT_SPECS}
 
+## Developer Interview
+{$INTERVIEW}
+
+IMPORTANT: Your output MUST align with the developer's stated preferences
+in the interview. If the developer chose approach X, use approach X.
+If they marked something as out-of-scope, exclude it.
+If an item is listed under "Open Items", use your best judgment but note your assumption.
+
 Your task:
 1. Read the request and research findings carefully
 2. Make technical decisions: approach, architecture, patterns to follow
@@ -240,7 +248,7 @@ Be pragmatic. Follow existing codebase patterns from context.md and research fin
 
 Store the output as `$ENG_OUTPUT`.
 
-## Step 7: Launch Clara — pm.md
+## Step 10: Launch Clara — pm.md
 
 Launch Clara agent with this prompt:
 
@@ -256,6 +264,14 @@ You are Clara. Generate the product specification for feature: {slug}
 ## Project Context
 {$CONTEXT}
 
+## Developer Interview
+{$INTERVIEW}
+
+IMPORTANT: Your output MUST align with the developer's stated preferences
+in the interview. If the developer chose approach X, use approach X.
+If they marked something as out-of-scope, exclude it.
+If an item is listed under "Open Items", use your best judgment but note your assumption.
+
 Your task:
 1. Define user stories with concrete acceptance criteria (Given/When/Then)
 2. Classify requirements: must-have, nice-to-have, out-of-scope
@@ -268,7 +284,7 @@ Be ruthless with scope. Every requirement must have acceptance criteria.
 
 Store the output as `$PM_OUTPUT`.
 
-## Step 8: Launch Pixel — ux.md (conditional)
+## Step 11: Launch Pixel — ux.md (conditional)
 
 Only if `$RUN_PIXEL` is `true`:
 
@@ -289,6 +305,14 @@ You are Pixel. Generate the UX specification for feature: {slug}
 ## Engineering Specification
 {$ENG_OUTPUT}
 
+## Developer Interview
+{$INTERVIEW}
+
+IMPORTANT: Your output MUST align with the developer's stated preferences
+in the interview. If the developer chose approach X, use approach X.
+If they marked something as out-of-scope, exclude it.
+If an item is listed under "Open Items", use your best judgment but note your assumption.
+
 Your task:
 1. Map the complete user flow from entry to completion
 2. Define all states: empty, loading, error, success, edge cases
@@ -303,7 +327,7 @@ Store the output as `$UX_OUTPUT`.
 
 If `$RUN_PIXEL` is `false`: set `$UX_OUTPUT` to `"No UX specification — no frontend detected."`.
 
-## Step 9: Launch Mestre — second pass (PLAN.md)
+## Step 12: Launch Mestre — second pass (PLAN.md)
 
 Launch Mestre agent to synthesize all specs into a concrete plan:
 
@@ -328,6 +352,14 @@ You are Mestre. Generate the implementation plan (PLAN.md) for feature: {slug}
 ## Project Context
 {$CONTEXT}
 
+## Developer Interview
+{$INTERVIEW}
+
+IMPORTANT: Your output MUST align with the developer's stated preferences
+in the interview. If the developer chose approach X, use approach X.
+If they marked something as out-of-scope, exclude it.
+If an item is listed under "Open Items", use your best judgment but note your assumption.
+
 Your task:
 1. Read all specifications and synthesize into numbered tasks
 2. Each task must have: effort estimate, file list, dependencies, test criteria
@@ -341,11 +373,13 @@ Rules:
 - Every task lists exact files it touches
 - Dependencies reference task IDs
 - If Clara marked something as out-of-scope, don't create tasks for it
+- If the developer interview decided on approach X, all tasks must use approach X
+- If the developer marked something as out-of-scope, don't create tasks for it
 ```
 
 Store the output as `$PLAN_OUTPUT`.
 
-## Step 10: Mestre generates delta specs
+## Step 13: Mestre generates delta specs
 
 Launch Mestre agent to create delta specifications:
 
@@ -360,6 +394,14 @@ You are Mestre. Generate delta specs for feature: {slug}
 
 ## Relevant Current Specs
 {$RELEVANT_SPECS}
+
+## Developer Interview
+{$INTERVIEW}
+
+IMPORTANT: Your output MUST align with the developer's stated preferences
+in the interview. If the developer chose approach X, use approach X.
+If they marked something as out-of-scope, exclude it.
+If an item is listed under "Open Items", use your best judgment but note your assumption.
 
 Your task:
 1. Based on the plan, determine what specs need to change
