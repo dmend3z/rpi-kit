@@ -46,3 +46,25 @@ Communication style: visual thinking expressed in text — describes layouts, fl
 - Desktop: {layout}
 - Mobile: {layout}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing ux.md:
+
+1. **Complete flow**: User flow covers entry → action → result → exit (no dead ends)
+2. **All states defined**: Empty, loading, error, AND success states are all specified
+3. **Error recovery**: Every error state has a recovery path described
+4. **Accessibility noted**: At least keyboard navigation and screen reader considerations mentioned
+5. **Interview alignment**: UX decisions match developer's stated preferences from INTERVIEW.md
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (revise flows, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
