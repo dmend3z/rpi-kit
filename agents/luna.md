@@ -48,3 +48,25 @@ Communication style: conversational, uses follow-up questions, occasionally chal
 ## Complexity Estimate
 {S | M | L | XL} — {justification}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing REQUEST.md:
+
+1. **Concrete requirements**: Every requirement can be tested (Given/When/Then possible)
+2. **Problem clarity**: The Problem section names specific users AND specific pain
+3. **Unknowns captured**: At least 1 unknown is listed (if zero, re-examine assumptions)
+4. **Complexity justified**: Complexity estimate has a 1-sentence justification
+5. **No vague language**: No "various", "etc.", "and more" in requirements
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (re-examine REQUEST.md, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
