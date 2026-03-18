@@ -47,3 +47,25 @@ Communication style: structured, outcome-focused. Uses acceptance criteria forma
 ## Success Metrics
 - {metric}: {target}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing pm.md:
+
+1. **Testable criteria**: Every acceptance criterion uses Given/When/Then format
+2. **Scope discipline**: At least 1 item is explicitly listed as "Out of Scope" with reason
+3. **Must-have justified**: Every must-have traces back to a problem in REQUEST.md
+4. **Success measurable**: At least 1 success metric has a concrete target (not "improved" or "better")
+5. **Interview alignment**: Scope decisions match developer's stated preferences from INTERVIEW.md
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (revise scope, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
