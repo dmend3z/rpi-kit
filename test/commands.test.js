@@ -25,6 +25,7 @@ const EXPECTED_COMMANDS = [
   "archive",
   "onboarding",
   "update",
+  "fix",
 ];
 
 const EXPECTED_AGENTS = [
@@ -102,6 +103,7 @@ describe("RPIKit v2 — Commands", () => {
       simplify: ["Razor"],
       review: ["Hawk", "Shield", "Sage", "Nexus"],
       docs: ["Quill"],
+      fix: ["Luna", "Mestre", "Forge"],
     };
 
     for (const [cmd, agents] of Object.entries(agentMap)) {
