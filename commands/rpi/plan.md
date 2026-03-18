@@ -183,8 +183,8 @@ After the interview, append your activity to rpi/features/{slug}/ACTIVITY.md:
 
 ### {current_date} — Nexus (Plan Interview)
 - **Action:** Developer interview for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Questions asked:** {count}
-- **Key decisions:** {summary of decisions made}
 - **Quality:** {your quality gate result}
 ```
 
@@ -257,6 +257,7 @@ After generating eng.md, append your activity to rpi/features/{slug}/ACTIVITY.md
 
 ### {current_date} — Mestre (Plan — eng.md)
 - **Action:** Engineering specification for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Architecture decisions:** {count}
 - **Files planned:** {count create + modify}
 - **Quality:** {your quality gate result}
@@ -301,6 +302,7 @@ After generating pm.md, append your activity to rpi/features/{slug}/ACTIVITY.md:
 
 ### {current_date} — Clara (Plan — pm.md)
 - **Action:** Product specification for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **User stories:** {count}
 - **Acceptance criteria:** {count}
 - **Scope cuts:** {count of out-of-scope items}
@@ -405,6 +407,7 @@ After generating PLAN.md, append your activity to rpi/features/{slug}/ACTIVITY.m
 
 ### {current_date} — Mestre (Plan — PLAN.md)
 - **Action:** Implementation plan for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Tasks:** {count}
 - **Complexity:** {S|M|L|XL}
 - **Quality:** {your quality gate result}
@@ -535,6 +538,7 @@ After adversarial review, append your activity to rpi/features/{slug}/ACTIVITY.m
 
 ### {current_date} — Nexus (Plan Adversarial Review)
 - **Action:** Adversarial review for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Issues found:** {count by severity}
 - **Contradictions resolved:** {count}
 - **Coherence status:** {PASS|PASS with notes|NEEDS re-plan}
@@ -586,7 +590,26 @@ If `$ADVERSARIAL_REVIEW` contains resolved issues:
    ```
 8. Write delta spec files from Step 13 into the appropriate delta subdirectories.
 
-## Step 17: Output summary
+## Step 17: Consolidate decisions to DECISIONS.md
+
+1. Read `rpi/features/{slug}/ACTIVITY.md`.
+2. Extract all `<decision>` tags from entries belonging to the Plan phase (Nexus interview, Mestre eng.md, Clara, Mestre PLAN.md, Nexus adversarial entries).
+3. If no decisions found, skip this step.
+4. Read `rpi/features/{slug}/DECISIONS.md` if it exists (to get the last decision number for sequential numbering).
+5. Append a new section to `rpi/features/{slug}/DECISIONS.md`:
+
+```markdown
+## Plan Phase
+_Generated: {current_date}_
+
+| # | Type | Decision | Alternatives | Rationale | Impact |
+|---|------|----------|-------------|-----------|--------|
+| {N} | {type} | {summary} | {alternatives} | {rationale} | {impact} |
+```
+
+6. Number decisions sequentially, continuing from the last number in DECISIONS.md.
+
+## Step 18: Output summary
 
 ```
 Plan complete: rpi/features/{slug}/plan/
