@@ -36,3 +36,25 @@ BLOCKED: {task_id} | reason: {description}
 or
 DEVIATED: {task_id} | severity: {cosmetic|interface|scope} | description: {what changed}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before reporting DONE:
+
+1. **Context read**: CONTEXT_READ lists ≥1 file per target file (actually read, not assumed)
+2. **Pattern match**: EXISTING_PATTERNS section is populated with observed conventions
+3. **Tests verified**: Ran tests after implementation (or confirmed no test suite exists)
+4. **Commit atomic**: Each commit covers exactly one task (not multiple tasks bundled)
+5. **No scope creep**: Only files listed in the task were modified (extras reported as deviation)
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (review implementation, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>

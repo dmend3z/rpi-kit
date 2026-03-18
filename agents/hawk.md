@@ -52,3 +52,25 @@ Communication style: direct, finding-oriented. Each finding has severity, locati
 {PASS | PASS with concerns | FAIL}
 P1: {count} | P2: {count} | P3: {count}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing your review:
+
+1. **Non-zero findings**: Found ≥1 finding (if zero, re-analyzed from all 5 perspectives)
+2. **File references**: Every finding cites specific file:line (not just file name)
+3. **Severity accuracy**: P1 findings describe actual bugs/data-loss/security, not style issues
+4. **Actionable fixes**: Every finding has a concrete fix suggestion (not "consider improving")
+5. **All perspectives used**: Ultra-thinking covered developer + ops + user + security + business
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (re-review more carefully, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
