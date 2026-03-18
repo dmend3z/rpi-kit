@@ -22,6 +22,7 @@
       "commands": [
         "./commands/rpi/archive.md",
         "./commands/rpi/docs.md",
+        "./commands/rpi/docs-gen.md",
         "./commands/rpi/implement.md",
         "./commands/rpi/init.md",
         "./commands/rpi/learn.md",

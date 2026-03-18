@@ -15,6 +15,7 @@ const EXPECTED_COMMANDS = [
   "simplify",
   "review",
   "docs",
+  "docs-gen",
   "rpi",
   "init",
   "status",
