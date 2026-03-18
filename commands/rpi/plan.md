@@ -1,6 +1,6 @@
 ---
 name: rpi:plan
-description: Generate implementation plan with Mestre (architect), Clara (PM), and Pixel (UX).
+description: Interview developer, generate specs with Mestre/Clara/Pixel, then adversarial review with Nexus.
 argument-hint: "<feature-name> [--force]"
 allowed-tools:
   - Read
@@ -12,9 +12,9 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /rpi:plan — Plan Phase
+# /rpi:plan — Plan Phase (v2: Interview-Driven)
 
-Mestre (architecture), Clara (product), and Pixel (UX, conditional) collaborate to produce a complete implementation plan. Nexus validates coherence across all outputs.
+Nexus interviews the developer, then Mestre (architecture), Clara (product), and Pixel (UX, conditional) generate specs informed by the interview. Nexus performs adversarial review, surfacing contradictions for developer resolution.
 
 ---
 
