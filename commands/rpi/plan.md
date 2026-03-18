@@ -528,37 +528,40 @@ If `$ADVERSARIAL_REVIEW` contains resolved issues:
    - If clean: proceed.
 4. Update `rpi/features/{slug}/plan/INTERVIEW.md` with the patched version of `$INTERVIEW`.
 
-## Step 12: Write all artifacts
+## Step 16: Write all artifacts
 
 1. Ensure directory exists: `rpi/features/{slug}/plan/`
-2. Write `rpi/features/{slug}/plan/eng.md` with `$ENG_OUTPUT`
-3. Write `rpi/features/{slug}/plan/pm.md` with `$PM_OUTPUT`
-4. If `$RUN_PIXEL` is `true`: write `rpi/features/{slug}/plan/ux.md` with `$UX_OUTPUT`
-5. Write `rpi/features/{slug}/plan/PLAN.md` with `$PLAN_OUTPUT`
-6. Ensure delta directories exist:
+2. The file `rpi/features/{slug}/plan/INTERVIEW.md` was already written in Step 8 and updated in Step 15.
+3. Write `rpi/features/{slug}/plan/eng.md` with `$ENG_OUTPUT`
+4. Write `rpi/features/{slug}/plan/pm.md` with `$PM_OUTPUT`
+5. If `$RUN_PIXEL` is `true`: write `rpi/features/{slug}/plan/ux.md` with `$UX_OUTPUT`
+6. Write `rpi/features/{slug}/plan/PLAN.md` with `$PLAN_OUTPUT`
+7. Ensure delta directories exist:
    ```bash
    mkdir -p rpi/features/{slug}/delta/ADDED
    mkdir -p rpi/features/{slug}/delta/MODIFIED
    mkdir -p rpi/features/{slug}/delta/REMOVED
    ```
-7. Write delta spec files from Step 10 into the appropriate delta subdirectories.
+8. Write delta spec files from Step 13 into the appropriate delta subdirectories.
 
-## Step 13: Output summary
+## Step 17: Output summary
 
 ```
 Plan complete: rpi/features/{slug}/plan/
 
 Artifacts:
-  - plan/eng.md     (Mestre — engineering spec)
-  - plan/pm.md      (Clara — product spec)
-  - plan/ux.md      (Pixel — UX spec)          ← only if frontend
-  - plan/PLAN.md    (Mestre — implementation tasks)
-  - delta/ADDED/    ({N} new specs)
-  - delta/MODIFIED/ ({N} updated specs)
-  - delta/REMOVED/  ({N} removed specs)
+  - plan/INTERVIEW.md (Nexus — developer interview)
+  - plan/eng.md       (Mestre — engineering spec)
+  - plan/pm.md        (Clara — product spec)
+  - plan/ux.md        (Pixel — UX spec)          ← only if frontend
+  - plan/PLAN.md      (Mestre — implementation tasks)
+  - delta/ADDED/      ({N} new specs)
+  - delta/MODIFIED/   ({N} updated specs)
+  - delta/REMOVED/    ({N} removed specs)
 
-Tasks: {N} | Files: {N} | Complexity: {S|M|L|XL}
-Coherence: {Nexus verdict}
+Tasks: {N} | Files: {N} | Complexity: {$COMPLEXITY}
+Interview: {N} questions asked, {N} contradictions resolved
+Coherence: {Nexus adversarial verdict}
 
 Next: /rpi {slug}
 Or explicitly: /rpi:implement {slug}
