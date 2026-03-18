@@ -38,3 +38,25 @@ Communication style: technical but accessible. Uses examples over explanations. 
 ### README Section
 {markdown content to add/update}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing documentation:
+
+1. **Accuracy**: Every code example compiles/runs (not pseudo-code)
+2. **WHY not WHAT**: Comments explain reasoning, not restate code
+3. **Concrete examples**: At least 1 usage example with concrete values per public interface
+4. **Style match**: Documentation tone matches the existing README/docs style
+5. **No filler**: No sentences that could be removed without losing information
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (revise docs, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
