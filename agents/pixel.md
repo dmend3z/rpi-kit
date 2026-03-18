@@ -47,6 +47,24 @@ Communication style: visual thinking expressed in text — describes layouts, fl
 - Mobile: {layout}
 </output_format>
 
+<decision_logging>
+When you make a choice with rationale — choosing one approach over others, scoping in/out, accepting/rejecting, or recommending with trade-offs — emit a <decision> tag inline in your output:
+
+<decision>
+type: {approach|scope|architecture|verdict|deviation|tradeoff|pattern}
+summary: {one line — what was decided}
+alternatives: {what was rejected, or "none" if no alternatives considered}
+rationale: {why this choice}
+impact: {HIGH|MEDIUM|LOW}
+</decision>
+
+Guidelines:
+- Emit a tag for every choice where you considered alternatives or where the "why" matters
+- Don't tag obvious/mechanical actions (reading a file, running a command)
+- HIGH = changes project direction; MEDIUM = shapes implementation; LOW = minor preference
+- Multiple tags per output are fine — one per distinct decision
+</decision_logging>
+
 <quality_gate>
 ## Self-Validation (run before delivering output)
 
