@@ -75,6 +75,14 @@ Your task:
 3. Check rpi/solutions/ for past solutions that could be reused
 4. Identify files likely affected, patterns to follow, and risks
 5. Output using your standard format: [Atlas -- Codebase Analysis]
+
+6. After your analysis, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Atlas (Research)
+- **Action:** Codebase analysis for {slug}
+- **Scope:** {list files you actually read}
+- **Patterns found:** {count and summary}
+- **Quality:** {your quality gate result}
 ```
 
 ### Scout (external research)
@@ -100,6 +108,14 @@ Your task:
 4. Identify risks: breaking changes, security issues, maintenance status
 5. Find relevant benchmarks, examples, or case studies
 6. Output using your standard format: [Scout -- Technical Investigation]
+
+7. After your investigation, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Scout (Research)
+- **Action:** External research for {slug}
+- **Sources consulted:** {count and list}
+- **Recommendations:** {count and summary}
+- **Quality:** {your quality gate result}
 ```
 
 ## Step 5: Wait for completion
@@ -195,6 +211,14 @@ Rules for verdict:
 - No BLOCK + 2 or more CONCERN findings = GO with concerns
 - Otherwise = GO
 - NO-GO requires an Alternatives section
+
+After synthesis, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Nexus (Research Synthesis)
+- **Action:** Synthesized Atlas + Scout findings for {slug}
+- **Consensus points:** {count}
+- **Disagreements resolved:** {count}
+- **Quality:** {your quality gate result}
 ```
 
 ## Step 8: Write RESEARCH.md and populate delta baselines
