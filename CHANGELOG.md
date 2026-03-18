@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.4.0] - 2026-03-18
+
+### Added
+- /rpi:fix quick bugfix command — Luna interviews, Mestre plans (max 3 tasks), Forge implements, all in one step
+- Auto-flow detection now skips research if PLAN.md already exists (supports /rpi:fix artifacts)
+
 ## [2.0.0] - 2026-03-17
 
 ### Breaking Changes

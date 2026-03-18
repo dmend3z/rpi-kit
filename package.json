@@ -1,6 +1,6 @@
 {
   "name": "rpi-kit",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Research → Plan → Implement. AI-assisted feature development with 13 named agents, delta specs, and knowledge compounding.",
   "license": "MIT",
   "author": "Daniel Mendes",
