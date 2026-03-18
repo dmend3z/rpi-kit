@@ -113,6 +113,7 @@ After your review, append your activity to rpi/features/{slug}/ACTIVITY.md:
 
 ### {current_date} — Hawk (Review)
 - **Action:** Adversarial code review for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Findings:** P1={count} P2={count} P3={count}
 - **Perspectives covered:** {list of 5 perspectives}
 - **Quality:** {your quality gate result}
@@ -191,6 +192,7 @@ After your audit, append your activity to rpi/features/{slug}/ACTIVITY.md:
 
 ### {current_date} — Shield (Review)
 - **Action:** Security audit for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Findings:** P1={count} P2={count} P3={count}
 - **OWASP categories checked:** {count}
 - **Quality:** {your quality gate result}
@@ -263,6 +265,7 @@ After your analysis, append your activity to rpi/features/{slug}/ACTIVITY.md:
 
 ### {current_date} — Sage (Review)
 - **Action:** Test coverage analysis for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Untested modules:** {count}
 - **Missing critical paths:** {count}
 - **Missing edge cases:** {count}
@@ -412,7 +415,26 @@ Verdict: {PASS | PASS with concerns | FAIL}
 (or "No solutions saved.")
 ```
 
-## Step 10: Output summary
+## Step 10: Consolidate decisions to DECISIONS.md
+
+1. Read `rpi/features/{slug}/ACTIVITY.md`.
+2. Extract all `<decision>` tags from entries belonging to the Review phase (Hawk, Shield, Sage entries from this run).
+3. If no decisions found, skip this step.
+4. Read `rpi/features/{slug}/DECISIONS.md` if it exists (to get the last decision number for sequential numbering).
+5. Append a new section to `rpi/features/{slug}/DECISIONS.md`:
+
+```markdown
+## Review Phase
+_Generated: {current_date}_
+
+| # | Type | Decision | Alternatives | Rationale | Impact |
+|---|------|----------|-------------|-----------|--------|
+| {N} | {type} | {summary} | {alternatives} | {rationale} | {impact} |
+```
+
+6. Number decisions sequentially, continuing from the last number in DECISIONS.md.
+
+## Step 11: Output summary
 
 ```
 Review complete: {slug}

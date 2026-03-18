@@ -127,6 +127,7 @@ After simplification, append your activity to rpi/features/{slug}/ACTIVITY.md:
 
 ### {current_date} — Razor (Simplify)
 - **Action:** Simplified implementation for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Reuse fixes:** {count}
 - **Quality fixes:** {count}
 - **Efficiency fixes:** {count}
@@ -186,7 +187,26 @@ Commit: {$SIMPLIFY_COMMIT}
 - Net lines: {+/-N}
 ```
 
-## Step 9: Output summary
+## Step 9: Consolidate decisions to DECISIONS.md
+
+1. Read `rpi/features/{slug}/ACTIVITY.md`.
+2. Extract all `<decision>` tags from entries belonging to the Simplify phase (Razor entries from this run).
+3. If no decisions found, skip this step.
+4. Read `rpi/features/{slug}/DECISIONS.md` if it exists (to get the last decision number for sequential numbering).
+5. Append a new section to `rpi/features/{slug}/DECISIONS.md`:
+
+```markdown
+## Simplify Phase
+_Generated: {current_date}_
+
+| # | Type | Decision | Alternatives | Rationale | Impact |
+|---|------|----------|-------------|-----------|--------|
+| {N} | {type} | {summary} | {alternatives} | {rationale} | {impact} |
+```
+
+6. Number decisions sequentially, continuing from the last number in DECISIONS.md.
+
+## Step 10: Output summary
 
 ```
 Simplify complete: {slug}

@@ -124,6 +124,7 @@ After writing tests, append your activity to rpi/features/{slug}/ACTIVITY.md:
 
 ### {current_date} — Sage (Implement — TDD for Task {task_id})
 - **Action:** Wrote failing tests for task {task_id}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Tests written:** {count}
 - **Edge cases covered:** {count}
 - **Quality:** {your quality gate result}
@@ -168,6 +169,7 @@ After completing the task, append your activity to rpi/features/{slug}/ACTIVITY.
 
 ### {current_date} — Forge (Implement — Task {task_id})
 - **Action:** Implemented task {task_id} for {slug}
+- **Key decisions:** {for each <decision> tag you emitted: "summary (rationale)", separated by semicolons. If none: "No decisions in this phase."}
 - **Files changed:** {list}
 - **Status:** {DONE|BLOCKED|DEVIATED}
 - **Quality:** {your quality gate result}
@@ -260,3 +262,22 @@ Update IMPLEMENT.md with a final section:
 - Deviations: {N} ({list severities})
 - Completed: {YYYY-MM-DD}
 ```
+
+## Step 7: Consolidate decisions to DECISIONS.md
+
+1. Read `rpi/features/{slug}/ACTIVITY.md`.
+2. Extract all `<decision>` tags from entries belonging to the Implement phase (Sage and Forge entries from this run).
+3. If no decisions found, skip this step.
+4. Read `rpi/features/{slug}/DECISIONS.md` if it exists (to get the last decision number for sequential numbering).
+5. Append a new section to `rpi/features/{slug}/DECISIONS.md`:
+
+```markdown
+## Implement Phase
+_Generated: {current_date}_
+
+| # | Type | Decision | Alternatives | Rationale | Impact |
+|---|------|----------|-------------|-----------|--------|
+| {N} | {type} | {summary} | {alternatives} | {rationale} | {impact} |
+```
+
+6. Number decisions sequentially, continuing from the last number in DECISIONS.md.
