@@ -258,6 +258,21 @@ describe("RPIKit v2 — Agents", () => {
       );
     }
   });
+
+  it("all agents have a decision_logging section", () => {
+    for (const agent of EXPECTED_AGENTS) {
+      const filePath = path.join(AGENTS_DIR, `${agent}.md`);
+      if (!fs.existsSync(filePath)) {
+        assert.fail(`${agent}.md does not exist`);
+      }
+      const content = fs.readFileSync(filePath, "utf8");
+      assert.match(
+        content,
+        /<decision_logging>/i,
+        `${agent}.md must have a <decision_logging> section`
+      );
+    }
+  });
 });
 
 describe("RPIKit v2 — Skills", () => {
