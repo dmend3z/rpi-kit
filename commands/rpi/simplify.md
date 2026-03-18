@@ -122,6 +122,16 @@ Output format:
 - Efficiency: {N} fixes
 - Lines removed: {N}
 - Lines added: {N}
+
+After simplification, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Razor (Simplify)
+- **Action:** Simplified implementation for {slug}
+- **Reuse fixes:** {count}
+- **Quality fixes:** {count}
+- **Efficiency fixes:** {count}
+- **Lines removed:** {count}
+- **Quality:** {your quality gate result}
 ```
 
 Store Razor's output as `$RAZOR_OUTPUT`.

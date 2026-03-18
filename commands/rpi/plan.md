@@ -178,6 +178,14 @@ After all questions answered, compile the interview results using your
 [Nexus — Developer Interview] output format.
 
 Return the compiled interview content.
+
+After the interview, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Nexus (Plan Interview)
+- **Action:** Developer interview for {slug}
+- **Questions asked:** {count}
+- **Key decisions:** {summary of decisions made}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$INTERVIEW`.
@@ -244,6 +252,14 @@ Your task:
 5. Output using your eng.md format: [Mestre -- Engineering Specification]
 
 Be pragmatic. Follow existing codebase patterns from context.md and research findings. No over-engineering.
+
+After generating eng.md, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Mestre (Plan — eng.md)
+- **Action:** Engineering specification for {slug}
+- **Architecture decisions:** {count}
+- **Files planned:** {count create + modify}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$ENG_OUTPUT`.
@@ -280,6 +296,15 @@ Your task:
 5. Output using your pm.md format: [Clara -- Product Specification]
 
 Be ruthless with scope. Every requirement must have acceptance criteria.
+
+After generating pm.md, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Clara (Plan — pm.md)
+- **Action:** Product specification for {slug}
+- **User stories:** {count}
+- **Acceptance criteria:** {count}
+- **Scope cuts:** {count of out-of-scope items}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$PM_OUTPUT`.
@@ -375,6 +400,14 @@ Rules:
 - If Clara marked something as out-of-scope, don't create tasks for it
 - If the developer interview decided on approach X, all tasks must use approach X
 - If the developer marked something as out-of-scope, don't create tasks for it
+
+After generating PLAN.md, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Mestre (Plan — PLAN.md)
+- **Action:** Implementation plan for {slug}
+- **Tasks:** {count}
+- **Complexity:** {S|M|L|XL}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$PLAN_OUTPUT`.
@@ -497,6 +530,15 @@ After completing all passes:
 4. MEDIUM/LOW issues: present summary, developer can dismiss or address
 5. For each resolved issue: note the chosen resolution and which artifacts need patching
 6. Return the full adversarial review with all resolutions noted
+
+After adversarial review, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Nexus (Plan Adversarial Review)
+- **Action:** Adversarial review for {slug}
+- **Issues found:** {count by severity}
+- **Contradictions resolved:** {count}
+- **Coherence status:** {PASS|PASS with notes|NEEDS re-plan}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$ADVERSARIAL_REVIEW`.
