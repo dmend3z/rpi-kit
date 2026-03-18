@@ -108,6 +108,14 @@ Output format:
 ## Summary
 - P1: {N} | P2: {N} | P3: {N}
 - Overall: {assessment}
+
+After your review, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Hawk (Review)
+- **Action:** Adversarial code review for {slug}
+- **Findings:** P1={count} P2={count} P3={count}
+- **Perspectives covered:** {list of 5 perspectives}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$HAWK_OUTPUT`.
@@ -178,6 +186,14 @@ Output format:
 
 ## Summary
 - P1: {N} | P2: {N} | P3: {N}
+
+After your audit, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Shield (Review)
+- **Action:** Security audit for {slug}
+- **Findings:** P1={count} P2={count} P3={count}
+- **OWASP categories checked:** {count}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$SHIELD_OUTPUT`.
@@ -242,6 +258,15 @@ Output format:
 - Modules without tests: {N}
 - Missing critical paths: {N}
 - Missing edge cases: {N}
+
+After your analysis, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Sage (Review)
+- **Action:** Test coverage analysis for {slug}
+- **Untested modules:** {count}
+- **Missing critical paths:** {count}
+- **Missing edge cases:** {count}
+- **Quality:** {your quality gate result}
 ```
 
 Store the output as `$SAGE_OUTPUT`.
