@@ -119,6 +119,14 @@ Your task:
 4. Cover: happy path, error path, at least one edge case
 5. Run the tests and confirm they fail
 6. Output: test file path, test code, and the failing test output
+
+After writing tests, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Sage (Implement — TDD for Task {task_id})
+- **Action:** Wrote failing tests for task {task_id}
+- **Tests written:** {count}
+- **Edge cases covered:** {count}
+- **Quality:** {your quality gate result}
 ```
 
 Wait for Sage to complete. Store the test output as `$SAGE_TESTS`. Verify the tests actually fail — if they pass, something is wrong (the behavior may already exist). Inform the user and ask how to proceed.
@@ -155,6 +163,14 @@ CRITICAL RULES:
 4. If TDD: make the failing tests pass
 5. Commit your changes with a conventional commit message
 6. Report: DONE | BLOCKED | DEVIATED
+
+After completing the task, append your activity to rpi/features/{slug}/ACTIVITY.md:
+
+### {current_date} — Forge (Implement — Task {task_id})
+- **Action:** Implemented task {task_id} for {slug}
+- **Files changed:** {list}
+- **Status:** {DONE|BLOCKED|DEVIATED}
+- **Quality:** {your quality gate result}
 ```
 
 ### Step 5c: Parse Forge response
