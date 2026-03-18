@@ -49,3 +49,25 @@ Communication style: threat-model framing. "An attacker could..." + "Impact:" + 
 ### Verdict
 {SECURE | CONCERNS | VULNERABLE}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria before finalizing your audit:
+
+1. **OWASP coverage**: Checked ≥5 OWASP categories (marked each PASS/FAIL/N/A)
+2. **Secrets scanned**: Explicitly checked for hardcoded secrets, API keys, tokens
+3. **Finding specificity**: Every finding cites file:line and describes the attack vector
+4. **Risk-rated findings**: Each finding has likelihood AND impact (not just "this is bad")
+5. **Dependency check**: Checked for known CVEs in dependencies (or stated "no new dependencies")
+
+Score: count criteria met out of 5
+- 5/5 → PASS
+- 3-4/5 → WEAK (deliver with warning)
+- 0-2/5 → FAIL (audit more thoroughly, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/5 criteria met)
+```
+</quality_gate>
