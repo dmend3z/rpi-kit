@@ -172,6 +172,30 @@ describe("RPIKit v2 — Commands", () => {
     assert.match(content, /delta/i, "archive.md should reference delta");
     assert.match(content, /specs/i, "archive.md should reference specs");
   });
+
+  it("phase commands reference ACTIVITY.md for logging", () => {
+    const phaseCommands = [
+      "research",
+      "plan",
+      "implement",
+      "simplify",
+      "review",
+      "docs",
+    ];
+
+    for (const cmd of phaseCommands) {
+      const filePath = path.join(COMMANDS_DIR, `${cmd}.md`);
+      if (!fs.existsSync(filePath)) {
+        assert.fail(`${cmd}.md does not exist`);
+      }
+      const content = fs.readFileSync(filePath, "utf8");
+      assert.match(
+        content,
+        /ACTIVITY\.md/i,
+        `${cmd}.md should reference ACTIVITY.md for logging`
+      );
+    }
+  });
 });
 
 describe("RPIKit v2 — Agents", () => {
@@ -210,6 +234,26 @@ describe("RPIKit v2 — Agents", () => {
       assert.match(content, /<persona>/i, `${agent}.md must have persona section`);
       assert.match(content, /<role>/i, `${agent}.md must have role section`);
       assert.match(content, /<output_format>/i, `${agent}.md must have output_format section`);
+    }
+  });
+
+  it("all agents have a quality_gate section", () => {
+    for (const agent of EXPECTED_AGENTS) {
+      const filePath = path.join(AGENTS_DIR, `${agent}.md`);
+      if (!fs.existsSync(filePath)) {
+        assert.fail(`${agent}.md does not exist`);
+      }
+      const content = fs.readFileSync(filePath, "utf8");
+      assert.match(
+        content,
+        /<quality_gate>/i,
+        `${agent}.md must have a <quality_gate> section`
+      );
+      assert.match(
+        content,
+        /PASS|WEAK|FAIL/,
+        `${agent}.md quality gate must define PASS/WEAK/FAIL scoring`
+      );
     }
   });
 });

@@ -61,6 +61,19 @@ For each feature:
 - Read `implement/IMPLEMENT.md` if it exists. Count completed tasks (`- [x]`) vs total.
 - Express as: `{completed}/{total} tasks`
 
+### Activity Log
+- Read `{feature_dir}/ACTIVITY.md` if it exists.
+- Extract the last 3 activity entries.
+- Extract quality scores from all entries — build a quality summary per phase:
+  - Research: {PASS|WEAK|FAIL|pending} (Atlas, Scout, Nexus scores)
+  - Plan: {PASS|WEAK|FAIL|pending} (Nexus interview, Mestre, Clara, adversarial scores)
+  - Implement: {PASS|WEAK|FAIL|pending} (Forge per-task scores)
+  - Simplify: {PASS|WEAK|FAIL|pending} (Razor score)
+  - Review: {PASS|WEAK|FAIL|pending} (Hawk, Shield, Sage, Nexus scores)
+  - Docs: {PASS|WEAK|FAIL|pending} (Quill score)
+- Identify any WEAK or FAIL scores for alerts.
+- Extract last activity timestamp for "last activity" display.
+
 ## Step 5: Display status
 
 ### If no specific feature requested (overview mode)
@@ -74,15 +87,35 @@ Output a status card per feature, sorted by phase (most advanced first):
 Phase: {phase} {task_progress if applicable}
 Verdict: {verdict}
 Complexity: {complexity}
+Last activity: {relative time, e.g. "2h ago" or "3 days ago"}
+Quality: {phase_quality_summary, e.g. "Research PASS | Plan PASS | Implement 3/7"}
 
 ## {feature-slug-2}
 Phase: {phase}
 Verdict: {verdict}
 Complexity: {complexity}
+Last activity: {relative time, e.g. "2h ago" or "3 days ago"}
+Quality: {phase_quality_summary, e.g. "Research PASS | Plan PASS | Implement 3/7"}
 
 ---
 {total_count} feature(s) active
 ```
+
+### Quality Alerts
+
+After the feature cards, if any feature has WEAK or FAIL quality scores:
+
+```
+## Alerts
+
+- {feature}: {phase} quality WEAK — {agent} ({reason from activity log})
+  Suggestion: {actionable suggestion, e.g. "Re-run /rpi:research" or "Add context to REQUEST.md"}
+
+- {feature}: {phase} quality FAIL — {agent} ({reason})
+  Suggestion: {actionable suggestion}
+```
+
+If no alerts: omit this section entirely.
 
 Phase display format:
 - `request` → "request (awaiting research)"
@@ -122,6 +155,23 @@ Complexity: {complexity}
 
 ## Next
 {Suggest the next command to run, e.g. "/rpi {slug}" or "/rpi:archive {slug}" if complete}
+
+## Activity Log (last 5 entries)
+{If ACTIVITY.md exists, show last 5 entries in reverse chronological order}
+{If no ACTIVITY.md: "No activity log yet."}
+
+## Quality Summary
+{For each completed phase, show quality scores:}
+- Research: Atlas {score} | Scout {score} | Nexus {score}
+- Plan: Interview {score} | Mestre {score} | Clara {score} | Adversarial {score}
+- Implement: {N}/{total} tasks, Forge avg quality {score}
+- Simplify: Razor {score}
+- Review: Hawk {score} | Shield {score} | Sage {score}
+- Docs: Quill {score}
+
+## Session Resume
+Last activity: {timestamp and description of last logged action}
+Next step: {suggest the next command based on current phase}
 ```
 
 If the requested feature does not exist:
