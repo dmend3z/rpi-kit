@@ -2,19 +2,19 @@
 
 AI-assisted feature development with 13 named agents, delta specs, and knowledge compounding.
 
-RPIKit is a Claude Code plugin that guides developers through a structured 7-phase pipeline. Each phase is run by specialized agents with distinct personas -- so you research before you plan, plan before you code, and review before you ship.
+RPIKit works with **Claude Code**, **Gemini CLI**, and **Codex**. It guides developers through a structured 7-phase pipeline. Each phase is run by specialized agents with distinct personas -- so you research before you plan, plan before you code, and review before you ship.
 
 ## Quick Start
 
 ```bash
-# Install from marketplace
-claude plugin install rpi-kit
+# Install via npm
+npm install -g rpi-kit
+
+# Install for your preferred tool
+rpi-kit install
 
 # First time: guided setup
 /rpi:onboarding
-
-# Or configure manually
-/rpi:init
 ```
 
 ## How It Works

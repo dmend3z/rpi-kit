@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.0] - 2026-03-18
+
+### Added
+- **Full Gemini CLI Support**: RPIKit now works natively in Gemini CLI as an extension.
+- **TOML Commands**: Automatically generated 18 commands in `.gemini/commands/rpi/` for Gemini CLI.
+- **Self-Installation**: Updated `bin/cli.js` to support automatic extension linking via `rpi-kit install --gemini`.
+- **NPM Package**: Updated `files` in `package.json` to include `.gemini/` directory for npm distribution.
+
 ## [2.4.0] - 2026-03-18
 
 ### Added

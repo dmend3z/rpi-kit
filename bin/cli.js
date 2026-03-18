@@ -90,8 +90,24 @@ function installCodex() {
 
 function installGeminiCLI() {
   log("Installing RPIKit for Gemini CLI...");
-  log("Gemini CLI: coming soon. Please see documentation for manual setup.");
-  return true;
+  if (!hasGeminiCLI()) {
+    log("Gemini CLI not found. Skipping.");
+    return false;
+  }
+
+  try {
+    // PLUGIN_DIR is the root of the npm package
+    execFileSync("gemini", ["extensions", "link", PLUGIN_DIR], {
+      stdio: silent ? "pipe" : "inherit",
+    });
+    log("Gemini CLI: extension linked.");
+    return true;
+  } catch (e) {
+    log("Gemini CLI: could not link extension.");
+    log("  Manual link:");
+    log(`    gemini extensions link ${PLUGIN_DIR}`);
+    return false;
+  }
 }
 
 function findInstalledPlugin() {
