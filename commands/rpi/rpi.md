@@ -51,7 +51,7 @@ Stop.
 
 Check which artifacts exist to determine the next phase:
 
-1. Has `REQUEST.md`, no `research/RESEARCH.md` → next = **research**
+1. Has `REQUEST.md`, no `research/RESEARCH.md` AND no `plan/PLAN.md` → next = **research**
 2. Has `research/RESEARCH.md`, no `plan/PLAN.md` → next = **plan**
 3. Has `plan/PLAN.md`, no `implement/IMPLEMENT.md` → next = **implement**
 4. Has `implement/IMPLEMENT.md` but NOT all tasks checked (`- [x]`) → next = **implement** (with `--resume`)

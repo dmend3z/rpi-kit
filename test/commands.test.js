@@ -366,4 +366,16 @@ describe("RPIKit v2 — Cross-references", () => {
       "plan.md should have severity levels"
     );
   });
+
+  it("fix command references bugfix-specific sections", () => {
+    const filePath = path.join(COMMANDS_DIR, "fix.md");
+    if (!fs.existsSync(filePath)) {
+      assert.fail("fix.md does not exist");
+    }
+    const content = fs.readFileSync(filePath, "utf8");
+    assert.match(content, /Bug Report/i, "fix.md should reference Bug Report section");
+    assert.match(content, /ESCALATE/i, "fix.md should handle escalation for complex bugs");
+    assert.match(content, /max.*3|maximum.*3|3 tasks/i, "fix.md should enforce 3-task limit");
+    assert.match(content, /ACTIVITY\.md/i, "fix.md should reference ACTIVITY.md for logging");
+  });
 });
