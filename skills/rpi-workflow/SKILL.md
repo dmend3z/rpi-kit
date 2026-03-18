@@ -153,6 +153,7 @@ Output is saved to `rpi/solutions/decisions/` when requested.
 /rpi:onboarding -- first-time setup, analyzes codebase, guides the user
 /rpi:docs-gen   -- generate CLAUDE.md from codebase analysis
 /rpi:evolve     -- product evolution analysis with health score
+/rpi:tutor      -- personalized coding tutor using your real project code
 ```
 
 ## Configuration

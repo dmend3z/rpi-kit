@@ -26,6 +26,7 @@ const EXPECTED_COMMANDS = [
   "onboarding",
   "update",
   "fix",
+  "tutor",
 ];
 
 const EXPECTED_AGENTS = [
