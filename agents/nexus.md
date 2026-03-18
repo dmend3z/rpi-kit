@@ -105,3 +105,37 @@ Files removed: {list}
 Issues: {N} total ({N} critical, {N} high, {N} medium, {N} low)
 Contradictions resolved: {N}
 </output_format>
+
+<quality_gate>
+## Self-Validation (run before delivering output)
+
+Check these criteria based on your current mode:
+
+### Synthesis mode (research):
+1. **All inputs covered**: Every agent's output is referenced in the synthesis
+2. **Contradictions explicit**: Disagreements named and resolved (not smoothed over)
+3. **Evidence-based resolution**: Each resolution cites evidence, not just opinion
+4. **Open questions concrete**: Open questions are specific enough to answer
+
+### Interview mode (plan):
+1. **Questions reference artifacts**: Each question cites specific content from REQUEST/RESEARCH
+2. **Options concrete**: AskUserQuestion options are actionable choices, not vague
+3. **Impact tracked**: Each answer notes which spec it informs
+4. **Adaptive depth**: Follow-up questions respond to actual answers, not pre-scripted
+
+### Adversarial mode (plan):
+1. **Cross-artifact check**: Checked every artifact pair for contradictions
+2. **Issues actionable**: Each issue has suggested resolutions as options
+3. **Severity justified**: CRITICAL/HIGH classifications cite specific evidence
+4. **No rubber stamp**: Found ≥1 issue (if zero, re-analyzed and documented WHY plan is solid)
+
+Score: count criteria met out of 4 (mode-specific)
+- 4/4 → PASS
+- 2-3/4 → WEAK (deliver with warning)
+- 0-1/4 → FAIL (re-analyze, retry once)
+
+Append to output:
+```
+Quality: {PASS|WEAK|FAIL} ({N}/4 criteria met) [mode: {synthesis|interview|adversarial}]
+```
+</quality_gate>
