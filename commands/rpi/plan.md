@@ -57,8 +57,9 @@ Nexus interviews the developer, then Mestre (architecture), Clara (product), and
 
 1. Read `rpi/features/{slug}/REQUEST.md` — store as `$REQUEST`.
 2. Read `rpi/features/{slug}/research/RESEARCH.md` — store as `$RESEARCH`.
-3. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
-4. Scan `rpi/specs/` for specs relevant to the feature — store as `$RELEVANT_SPECS`.
+3. Read `rpi/features/{slug}/DESIGN.md` if it exists — store as `$DESIGN`.
+4. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
+5. Scan `rpi/specs/` for specs relevant to the feature — store as `$RELEVANT_SPECS`.
 
 ## Step 5: Detect frontend
 
@@ -118,6 +119,9 @@ you help the developer make informed ones.
 
 ### RESEARCH.md
 {$RESEARCH}
+
+### DESIGN.md
+{$DESIGN}
 
 ### Project Context
 {$CONTEXT}
@@ -230,6 +234,9 @@ You are Mestre. Generate the engineering specification for feature: {slug}
 ## Research
 {$RESEARCH}
 
+## Design Context
+{$DESIGN}
+
 ## Project Context
 {$CONTEXT}
 
@@ -278,6 +285,9 @@ You are Clara. Generate the product specification for feature: {slug}
 ## Research
 {$RESEARCH}
 
+## Design Context
+{$DESIGN}
+
 ## Project Context
 {$CONTEXT}
 
@@ -325,6 +335,9 @@ You are Pixel. Generate the UX specification for feature: {slug}
 
 ## Research
 {$RESEARCH}
+
+## Design Context
+{$DESIGN}
 
 ## Project Context
 {$CONTEXT}
@@ -375,6 +388,9 @@ You are Mestre. Generate the implementation plan (PLAN.md) for feature: {slug}
 
 ## Research
 {$RESEARCH}
+
+## Design Context
+{$DESIGN}
 
 ## Project Context
 {$CONTEXT}

@@ -39,8 +39,9 @@ Execute PLAN.md task by task. Forge implements each task with strict CONTEXT_REA
 
 1. Read `rpi/features/{slug}/plan/PLAN.md` — store as `$PLAN`.
 2. Read `rpi/features/{slug}/plan/eng.md` if it exists — store as `$ENG`.
-3. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
-4. Parse `$PLAN` to extract the ordered task list. Each task should have:
+3. Read `rpi/features/{slug}/DESIGN.md` if it exists — store as `$DESIGN`.
+4. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
+5. Parse `$PLAN` to extract the ordered task list. Each task should have:
    - `task_id`: task number/identifier
    - `description`: what to implement
    - `files`: target files to create or modify
@@ -109,6 +110,9 @@ You are Sage. Write failing tests for task {task_id} of feature: {slug}
 ## Engineering Spec
 {$ENG}
 
+## Design Context
+{$DESIGN}
+
 ## Project Context
 {$CONTEXT}
 
@@ -150,6 +154,9 @@ You are Forge. Implement task {task_id} for feature: {slug}
 
 ## Engineering Spec
 {$ENG}
+
+## Design Context
+{$DESIGN}
 
 ## Project Context
 {$CONTEXT}

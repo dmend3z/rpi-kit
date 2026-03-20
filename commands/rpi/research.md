@@ -42,9 +42,10 @@ Run Atlas (codebase analysis) and Scout (external research) in parallel. Nexus s
 ## Step 3: Gather context
 
 1. Read `rpi/features/{slug}/REQUEST.md` — store as `$REQUEST`.
-2. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
-3. Scan `rpi/specs/` for any specs relevant to the feature described in REQUEST.md — store as `$RELEVANT_SPECS`.
-4. Scan `rpi/solutions/` for any past solutions relevant to this feature — store as `$RELEVANT_SOLUTIONS`.
+2. Read `rpi/features/{slug}/DESIGN.md` if it exists — store as `$DESIGN`.
+3. Read `rpi/context.md` (project context) if it exists — store as `$CONTEXT`.
+4. Scan `rpi/specs/` for any specs relevant to the feature described in REQUEST.md — store as `$RELEVANT_SPECS`.
+5. Scan `rpi/solutions/` for any past solutions relevant to this feature — store as `$RELEVANT_SOLUTIONS`.
 
 ## Step 4: Launch Atlas and Scout in parallel
 
@@ -59,6 +60,9 @@ You are Atlas. Analyze the codebase for feature: {slug}
 
 ## Request
 {$REQUEST}
+
+## Design Context
+{$DESIGN}
 
 ## Project Context
 {$CONTEXT}
@@ -95,6 +99,9 @@ You are Scout. Research technical feasibility for feature: {slug}
 
 ## Request
 {$REQUEST}
+
+## Design Context
+{$DESIGN}
 
 ## Project Context
 {$CONTEXT}
